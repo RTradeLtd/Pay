@@ -1,0 +1,5 @@
+//	frontendProtected.POST("/payment/pin/confirm/:hash", api.submitPinPaymentConfirmation)
+//	frontendProtected.POST("/payment/pin/create/:hash", api.createPinPayment)
+//	frontendProtected.POST("/payment/pin/confirm", api.submitPinPaymentConfirmation)
+//	frontendProtected.POST("/payment/pin/submit/:hash", api.submitPaymentToContract)
+//	frontendProtected.POST("/payment/file/create", api.createFilePayment)
