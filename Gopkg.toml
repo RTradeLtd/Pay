@@ -1,0 +1,24 @@
+ignored = ["github.com/karalabe/hid", "github.com/satori/go.uuid", "github.com/ipfs/go-ipfs"]
+
+[prune]
+  go-tests = true
+  unused-packages = true
+
+# IPFS
+
+[[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.15"
+
+[[constraint]]
+  name = "github.com/jinzhu/gorm"
+  version = "1.9.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/streadway/amqp"
+
