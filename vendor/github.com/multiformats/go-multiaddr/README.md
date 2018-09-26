@@ -73,19 +73,9 @@ m1.Protocols()
 #### En/decapsulate
 
 ```go
-import ma "github.com/multiformats/go-multiaddr"
-
-m, err := ma.NewMultiaddr("/ip4/127.0.0.1/udp/1234")
-// <Multiaddr /ip4/127.0.0.1/udp/1234>
-
-sctpMA, err := ma.NewMultiaddr("/sctp/5678")
-
-m.Encapsulate(sctpMA)
+m.Encapsulate(ma.NewMultiaddr("/sctp/5678"))
 // <Multiaddr /ip4/127.0.0.1/udp/1234/sctp/5678>
-
-udpMA, err := ma.NewMultiaddr("/udp/1234")
-
-m.Decapsulate(udpMA) // up to + inc last occurrence of subaddr
+m.Decapsulate(ma.NewMultiaddr("/udp")) // up to + inc last occurrence of subaddr
 // <Multiaddr /ip4/127.0.0.1>
 ```
 

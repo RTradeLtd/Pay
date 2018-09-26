@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/RTradeLtd/Temporal/config"
-	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/database"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/streadway/amqp"
