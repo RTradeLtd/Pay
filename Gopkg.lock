@@ -2,12 +2,97 @@
 
 
 [[projects]]
-  digest = "1:3e2fb31e282e2112646332da032e918237971716b016ea5a91fd40a416f2be60"
+  digest = "1:9d11916bba2d15219acabe682edd3c0babef9d70146105fbaa3db2feebb1758f"
   name = "github.com/RTradeLtd/Temporal"
-  packages = ["config"]
+  packages = [
+    "config",
+    "database",
+    "models",
+  ]
   pruneopts = "UT"
   revision = "1b7a7152cec562fbd98f2b0e3db20d2bfad17f7f"
   version = "0.1-alpha"
+
+[[projects]]
+  branch = "master"
+  digest = "1:7d191fd0c54ff370eaf6116a14dafe2a328df487baea280699f597aae858d00d"
+  name = "github.com/aristanetworks/goarista"
+  packages = ["monotime"]
+  pruneopts = "UT"
+  revision = "ff33da284e760fcdb03c33d37a719e5ed30ba844"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c0decf632843204d2b8781de7b26e7038584e2dcccc7e2f401e88ae85b1df2b7"
+  name = "github.com/btcsuite/btcd"
+  packages = ["btcec"]
+  pruneopts = "UT"
+  revision = "2a560b2036bee5e3679ec2133eb6520b2f195213"
+
+[[projects]]
+  digest = "1:e47d51dab652d26c3fba6f8cba403f922d02757a82abdc77e90df7948daf296e"
+  name = "github.com/deckarep/golang-set"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cbaa98ba5575e67703b32b4b19f73c91f3c4159e"
+  version = "v1.7.1"
+
+[[projects]]
+  digest = "1:b921baa10451cbde725895090f454a7aba7174bf1451a79e499a4bd1cb151fa2"
+  name = "github.com/ethereum/go-ethereum"
+  packages = [
+    ".",
+    "accounts",
+    "accounts/abi",
+    "accounts/abi/bind",
+    "accounts/keystore",
+    "common",
+    "common/hexutil",
+    "common/math",
+    "common/mclock",
+    "common/prque",
+    "core/types",
+    "crypto",
+    "crypto/secp256k1",
+    "crypto/sha3",
+    "ethclient",
+    "ethdb",
+    "event",
+    "log",
+    "metrics",
+    "p2p/netutil",
+    "params",
+    "rlp",
+    "rpc",
+    "trie",
+  ]
+  pruneopts = "UT"
+  revision = "477eb0933b9529f7deeccc233cc815fe34a8ea56"
+  version = "v1.8.16"
+
+[[projects]]
+  digest = "1:586ea76dbd0374d6fb649a91d70d652b7fe0ccffb8910a77468e7702e7901f3d"
+  name = "github.com/go-stack/stack"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a"
+  version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4a0c6bb4805508a6287675fac876be2ac1182539ca8a32468d8128882e9d5009"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  digest = "1:3a26588bc48b96825977c1b3df964f8fd842cd6860cc26370588d3563433cf11"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -49,6 +134,30 @@
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
 
 [[projects]]
+  digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
+
+[[projects]]
+  digest = "1:8f4b365e527c00e2ba6b25a4c41ee7b84078c375fba83c971e54d2f0582df279"
+  name = "github.com/rjeczalik/notify"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0f065fa99b48b842c3fd3e2c8b194c6f2b69f6b8"
+  version = "v0.9.1"
+
+[[projects]]
+  digest = "1:0b8dd7447e420afff0260179dc892711e837edd1d446bc78dab924624a3c3c81"
+  name = "github.com/rs/cors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3fb1b69b103a84de38a19c3c6ec073dd6caa4d3f"
+  version = "v1.5.0"
+
+[[projects]]
   digest = "1:dc2d85c13ac22c22a1f3170a41a8e1b897fa05134aaf533f16df44f66a25b4a1"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -66,11 +175,46 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
+  digest = "1:f2ffd421680b0a3f7887501b3c6974bcf19217ecd301d0e2c9b681940ec363d5"
+  name = "github.com/syndtr/goleveldb"
+  packages = [
+    "leveldb",
+    "leveldb/cache",
+    "leveldb/comparer",
+    "leveldb/errors",
+    "leveldb/filter",
+    "leveldb/iterator",
+    "leveldb/journal",
+    "leveldb/memdb",
+    "leveldb/opt",
+    "leveldb/storage",
+    "leveldb/table",
+    "leveldb/util",
+  ]
+  pruneopts = "UT"
+  revision = "ae2bd5eed72d46b28834ec3f60db3a3ebedd8dbd"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ef7037c72b0535a5037366c2f66a0e2b48ee8de4b47c380dec7b3fffac92f804"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "bcrypt",
+    "blowfish",
+    "pbkdf2",
+    "scrypt",
+    "ssh/terminal",
+  ]
   pruneopts = "UT"
   revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
+
+[[projects]]
+  branch = "master"
+  digest = "1:7427036b6d926b3d1fa0773771820735b35554a98296f1074df440ee30a97296"
+  name = "golang.org/x/net"
+  packages = ["websocket"]
+  pruneopts = "UT"
+  revision = "f04abc6bdfa7a0171a8a0c9fd2ada9391044d056"
 
 [[projects]]
   branch = "master"
@@ -83,13 +227,37 @@
   pruneopts = "UT"
   revision = "b09afc3d579e346c4a7e4705953acaf6f9e551bd"
 
+[[projects]]
+  branch = "master"
+  digest = "1:45751dc3302c90ea55913674261b2d74286b05cdd8e3ae9606e02e4e77f4353f"
+  name = "golang.org/x/tools"
+  packages = [
+    "go/ast/astutil",
+    "imports",
+    "internal/fastwalk",
+  ]
+  pruneopts = "UT"
+  revision = "9eb9690e392a79b547be16fa2fa66f1710ed3035"
+
+[[projects]]
+  branch = "v2"
+  digest = "1:3d3f9391ab615be8655ae0d686a1564f3fec413979bb1aaf018bac1ec1bb1cc7"
+  name = "gopkg.in/natefinch/npipe.v2"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c1b8fa8bdccecb0b8db834ee0b92fdbcfa606dd6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/RTradeLtd/Temporal/config",
+    "github.com/RTradeLtd/Temporal/database",
+    "github.com/ethereum/go-ethereum/accounts/abi/bind",
+    "github.com/ethereum/go-ethereum/common",
+    "github.com/ethereum/go-ethereum/core/types",
+    "github.com/ethereum/go-ethereum/ethclient",
     "github.com/jinzhu/gorm",
-    "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
   ]
