@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/streadway/amqp"
 )
@@ -26,5 +26,6 @@ type QueueManager struct {
 type PaymentCreation struct {
 	TxHash     string `json:"tx_hash"`
 	Blockchain string `json:"blockchain"`
+	Type       string `json:"type"`
 	UserName   string `json:"user_name"`
 }

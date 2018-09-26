@@ -2,12 +2,11 @@ package queue
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
-	"github.com/RTradeLtd/Temporal/config"
-	"github.com/RTradeLtd/Temporal/database"
+	"github.com/RTradeLtd/Temporal_Payment-ETH/config"
+	"github.com/RTradeLtd/Temporal_Payment-ETH/database"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/streadway/amqp"
@@ -136,42 +135,9 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 	switch qm.Service {
 	// only parse datbase file requests
 	case PaymentCreationQueue:
-		return nil
+		return qm.ProcessEthereumBasedPayment(msgs, db)
 	default:
 		log.Fatal("invalid queue name")
-	}
-	return nil
-}
-
-//PublishMessageWithExchange is used to publish a message to a given exchange
-func (qm *QueueManager) PublishMessageWithExchange(body interface{}, exchangeName string) error {
-	switch exchangeName {
-	case PinExchange:
-		break
-	case PinRemovalExchange:
-		break
-	case IpfsKeyExchange:
-		break
-	default:
-		return errors.New("invalid exchange name provided")
-	}
-	bodyMarshaled, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-	err = qm.Channel.Publish(
-		exchangeName, // exchange
-		"",           // routing key
-		false,        // mandatory
-		false,        // immediate
-		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
-			ContentType:  "text/plain",
-			Body:         bodyMarshaled,
-		},
-	)
-	if err != nil {
-		return err
 	}
 	return nil
 }
