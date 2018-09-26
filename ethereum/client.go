@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/RTradeLtd/config"
@@ -24,6 +25,7 @@ const (
 type Client struct {
 	ETH               *ethclient.Client
 	RPC               *ethrpc.EthRPC
+	Auth              *bind.TransactOpts
 	ConfirmationCount int
 }
 
@@ -54,6 +56,24 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		ETH:               eClient,
 		RPC:               rpcClient,
 		ConfirmationCount: count}, nil
+}
+
+// UnlockAccount is used to unlck our main account
+func (c *Client) UnlockAccount(keys ...string) error {
+	var (
+		err  error
+		auth *bind.TransactOpts
+	)
+	if len(keys) > 0 {
+		auth, err = bind.NewTransactor(strings.NewReader(keys[0]), keys[1])
+	} else {
+		return errors.New("config based account unlocked not yet spported")
+	}
+	if err != nil {
+		return err
+	}
+	c.Auth = auth
+	return nil
 }
 
 // ProcessEthPaymentTx is used to process an ethereum payment transaction
