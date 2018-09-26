@@ -1,8 +1,12 @@
 package models
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/RTradeLtd/Temporal/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/lib/pq"
 )
@@ -11,10 +15,11 @@ type Upload struct {
 	gorm.Model
 	Hash               string `gorm:"type:varchar(255);not null;"`
 	Type               string `gorm:"type:varchar(255);not null;"` //  file, pin
+	NetworkName        string `gorm:"type:varchar(255)"`
 	HoldTimeInMonths   int64  `gorm:"type:integer;not null;"`
-	UploadAddress      string `gorm:"type:varchar(255);not null;"`
+	UserName           string `gorm:"type:varchar(255);not null;"`
 	GarbageCollectDate time.Time
-	UploaderAddresses  pq.StringArray `gorm:"type:text[];not null;"`
+	UserNames          pq.StringArray `gorm:"type:text[];not null;"`
 }
 
 const dev = true
@@ -23,93 +28,159 @@ type UploadManager struct {
 	DB *gorm.DB
 }
 
-// RunDatabaseGarbageCollection is used to parse through the database
-// and delete all objects whose GCD has passed
-// TODO: Maybe move this to the database file?
-func (um *UploadManager) RunDatabaseGarbageCollection() *[]Upload {
-	var uploads []Upload
-	var deletedUploads []Upload
-
-	um.DB.Find(&uploads)
-	for _, v := range uploads {
-		if time.Now().Unix() > v.GarbageCollectDate.Unix() {
-			um.DB.Delete(&v)
-			deletedUploads = append(deletedUploads, v)
-		}
-	}
-	return &deletedUploads
-}
-
-// RunTestDatabaseGarbageCollection is used to run a test garbage collection run.
-// NOTE that this will delete literally every single object it detects.
-func (um *UploadManager) RunTestDatabaseGarbageCollection() *[]Upload {
-	var foundUploads []Upload
-	var deletedUploads []Upload
-	if !dev {
-		return nil
-	}
-	// get all uploads
-	um.DB.Find(&foundUploads)
-	for _, v := range foundUploads {
-		um.DB.Delete(v)
-		deletedUploads = append(deletedUploads, v)
-	}
-	return &deletedUploads
-}
-
 // NewUploadManager is used to generate an upload manager interface
 func NewUploadManager(db *gorm.DB) *UploadManager {
 	return &UploadManager{DB: db}
 }
 
+// NewUpload is used to create a new upload in the database
+func (um *UploadManager) NewUpload(contentHash, uploadType, networkName, username string, holdTimeInMonths int64) (*Upload, error) {
+	_, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+	if err == nil {
+		// this means that there is already an upload in hte database matching this content hash and network name, so we will skip
+		return nil, errors.New("attempting to create new upload entry when one already exists in database")
+	}
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%+v", holdTimeInMonths))
+	if err != nil {
+		return nil, err
+	}
+	upload := Upload{
+		Hash:               contentHash,
+		Type:               uploadType,
+		NetworkName:        networkName,
+		HoldTimeInMonths:   holdTimeInMonths,
+		UserName:           username,
+		GarbageCollectDate: utils.CalculateGarbageCollectDate(holdInt),
+		UserNames:          []string{username},
+	}
+	if check := um.DB.Create(&upload); check.Error != nil {
+		return nil, check.Error
+	}
+	return &upload, nil
+}
+
+// UpdateUpload is used to upadte an already existing upload
+func (um *UploadManager) UpdateUpload(holdTimeInMonths int64, username, contentHash, networkName string) (*Upload, error) {
+	upload, err := um.FindUploadByHashAndNetwork(contentHash, networkName)
+	if err != nil {
+		return nil, err
+	}
+	isUploader := false
+	upload.UserName = username
+	for _, v := range upload.UserNames {
+		if username == v {
+			isUploader = true
+			break
+		}
+	}
+	if !isUploader {
+		upload.UserNames = append(upload.UserNames, username)
+	}
+	holdInt, err := strconv.Atoi(fmt.Sprintf("%v", holdTimeInMonths))
+	if err != nil {
+		return nil, err
+	}
+	oldGcd := upload.GarbageCollectDate
+	newGcd := utils.CalculateGarbageCollectDate(holdInt)
+	if newGcd.Unix() > oldGcd.Unix() {
+		upload.HoldTimeInMonths = holdTimeInMonths
+		upload.GarbageCollectDate = oldGcd
+	}
+	if check := um.DB.Save(upload); check.Error != nil {
+		return nil, err
+	}
+	return upload, nil
+}
+
+// RunDatabaseGarbageCollection is used to parse through the database
+// and delete all objects whose GCD has passed
+// TODO: Maybe move this to the database file?
+func (um *UploadManager) RunDatabaseGarbageCollection() (*[]Upload, error) {
+	var uploads []Upload
+	var deletedUploads []Upload
+
+	if check := um.DB.Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	for _, v := range uploads {
+		if time.Now().Unix() > v.GarbageCollectDate.Unix() {
+			if check := um.DB.Delete(&v); check.Error != nil {
+				return nil, check.Error
+			}
+			deletedUploads = append(deletedUploads, v)
+		}
+	}
+	return &deletedUploads, nil
+}
+
+// RunTestDatabaseGarbageCollection is used to run a test garbage collection run.
+// NOTE that this will delete literally every single object it detects.
+func (um *UploadManager) RunTestDatabaseGarbageCollection() (*[]Upload, error) {
+	var foundUploads []Upload
+	var deletedUploads []Upload
+	if !dev {
+		return nil, errors.New("not in dev mode")
+	}
+	// get all uploads
+	if check := um.DB.Find(&foundUploads); check.Error != nil {
+		return nil, check.Error
+	}
+	for _, v := range foundUploads {
+		if check := um.DB.Delete(v); check.Error != nil {
+			return nil, check.Error
+		}
+		deletedUploads = append(deletedUploads, v)
+	}
+	return &deletedUploads, nil
+}
+
+func (um *UploadManager) FindUploadsByNetwork(networkName string) (*[]Upload, error) {
+	uploads := &[]Upload{}
+	if check := um.DB.Where("network_name = ?", networkName).Find(uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return uploads, nil
+}
+func (um *UploadManager) FindUploadByHashAndNetwork(hash, networkName string) (*Upload, error) {
+	upload := &Upload{}
+	if check := um.DB.Where("hash = ? AND network_name = ?", hash, networkName).First(upload); check.Error != nil {
+		return nil, check.Error
+	}
+	return upload, nil
+}
+
 // FindUploadsByHash is used to return all instances of uploads matching the
 // given hash
-func (um *UploadManager) FindUploadsByHash(hash string) []*Upload {
+func (um *UploadManager) FindUploadsByHash(hash string) *[]Upload {
 
-	uploads := []*Upload{}
+	uploads := []Upload{}
 
 	um.DB.Find(&uploads).Where("hash = ?", hash)
 
-	return uploads
+	return &uploads
 }
 
-// GetUploadByHashForUploader is used to retrieve the last (most recent) upload for a user
-func (um *UploadManager) GetUploadByHashForUploader(hash string, uploaderAddress string) []*Upload {
+// GetUploadByHashForUser is used to retrieve the last (most recent) upload for a user
+func (um *UploadManager) GetUploadByHashForUser(hash string, username string) []*Upload {
 	var uploads []*Upload
-	um.DB.Find(&uploads).Where("hash = ? AND uploader_address = ?", hash, uploaderAddress)
+	um.DB.Find(&uploads).Where("hash = ? AND user_name = ?", hash, username)
 	return uploads
 }
 
 // GetUploads is used to return all  uploads
-func (um *UploadManager) GetUploads() *[]Upload {
-	var uploads []Upload
-	um.DB.Find(&uploads)
-	return &uploads
+func (um *UploadManager) GetUploads() (*[]Upload, error) {
+	uploads := []Upload{}
+	if check := um.DB.Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return &uploads, nil
 }
 
-// GetUploadsForAddress is used to retrieve all uploads by an address
-func (um *UploadManager) GetUploadsForAddress(address string) *[]Upload {
-	var uploads []Upload
-	um.DB.Where("upload_address = ?", address).Find(&uploads)
-	return &uploads
-}
-
-// AddPinHash is used to upload a pin hash to our database
-func (um *UploadManager) AddPinHash(hash string, uploaderAddress string, holdTimeInMonths int64) {
-	var upload Upload
-	upload.HoldTimeInMonths = holdTimeInMonths
-	upload.UploadAddress = uploaderAddress
-	upload.Hash = hash
-	upload.Type = "pin"
-	um.DB.Create(upload)
-}
-
-// AddFileHash is used to add the hash of a file to our database
-func (um *UploadManager) AddFileHash(hash string, uploaderAddress string, holdTimeInMonths int64) {
-	var upload Upload
-	upload.HoldTimeInMonths = holdTimeInMonths
-	upload.UploadAddress = uploaderAddress
-	upload.Hash = hash
-	upload.Type = "file"
-	um.DB.Create(&upload)
+// GetUploadsForUser is used to retrieve all uploads by a user name
+func (um *UploadManager) GetUploadsForUser(username string) (*[]Upload, error) {
+	uploads := []Upload{}
+	if check := um.DB.Where("user_name = ?", username).Find(&uploads); check.Error != nil {
+		return nil, check.Error
+	}
+	return &uploads, nil
 }
