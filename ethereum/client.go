@@ -93,7 +93,7 @@ func (c *Client) ProcessEthPaymentTx(txHash string) error {
 }
 
 // WaitForConfirmations is used to wait for enough block confirmations for a tx to be considered valid
-func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
+func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) error {
 	rcpt, err := c.RPC.EthGetTransactionReceipt(tx.Hash().String())
 	if err != nil {
 		return err
@@ -145,6 +145,18 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 	if rcpt.Status != "1" {
 		return errors.New("transaction status is not 1")
 	}
-	// tx was successfully mined
+	// if we are confirming an eth payment tx, than we must
+	// restrict gas limit to 21K, which is base cost of a tx
+	// and the amount of gs required to send ETH. We enforce this
+	// check, because confirming contract transactions requires
+	// additional validation, which normal eth payments dont
+	if ethPayment && rcpt.GasUsed > int(21000) {
+		return errors.New("eth payments can only use maximum of 21K gas")
+	} else if ethPayment && rcpt.GasUsed == int(21000) {
+		// eth tx was successfully mined
+		return nil
+	}
+	// TODO: add processing for smart contract transaction
+	// smart contract tx was successfully mined
 	return nil
 }
