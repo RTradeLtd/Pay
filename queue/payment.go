@@ -63,6 +63,20 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 				continue
 			}
 		}
+		if _, err := service.PM.ConfirmPayment(pc.TxHash); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to confirm payment")
+			d.Ack(false)
+			continue
+		}
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.Service,
+		}).Info("payment confirmed")
+		// TODO: Add credits for user based on USD evaluation of transaction
+		d.Ack(false)
+		continue
 	}
 	return nil
 }
