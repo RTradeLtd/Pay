@@ -89,7 +89,7 @@ func (c *Client) ProcessEthPaymentTx(txHash string) error {
 			return err
 		}
 	}
-	return c.WaitForConfirmations(tx)
+	return c.WaitForConfirmations(tx, true)
 }
 
 // WaitForConfirmations is used to wait for enough block confirmations for a tx to be considered valid
