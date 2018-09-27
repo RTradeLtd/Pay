@@ -10,8 +10,8 @@
   revision = "bb146f9c1b7283be744d24f1cc7f6a29fa202b61"
 
 [[projects]]
-  branch = "master"
-  digest = "1:133d4604164e519dd08055de82022b43df1ac914e3b4d538d9aa7d07d06b94ee"
+  branch = "feat/payments"
+  digest = "1:f83c30d6b958aae729f77cda471708707191ade9126924c3d4fd97c699d730cf"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -19,7 +19,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "8360521bf57b65797464238a22303dc78a29f0c5"
+  revision = "ea2e4cfc4f023c212825307252d60b1d1762e1d0"
 
 [[projects]]
   branch = "master"
@@ -562,6 +562,7 @@
   input-imports = [
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/database",
+    "github.com/RTradeLtd/database/models",
     "github.com/ethereum/go-ethereum/accounts/abi/bind",
     "github.com/ethereum/go-ethereum/common",
     "github.com/ethereum/go-ethereum/core/types",
