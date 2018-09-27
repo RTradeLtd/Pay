@@ -28,7 +28,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/RTradeLtd/config"
- 
+
 [[constraint]]
   branch = "feat/payments"
   name = "github.com/RTradeLtd/database"

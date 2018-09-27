@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "feat/payments"
-  digest = "1:f83c30d6b958aae729f77cda471708707191ade9126924c3d4fd97c699d730cf"
+  digest = "1:872f2440f0aa9890218c82c070c547a82df784272cef7f35dc8db7222f6e528f"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -19,7 +19,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "ea2e4cfc4f023c212825307252d60b1d1762e1d0"
+  revision = "4ba7306f59f73b1b35477f0827bceb2f80d2a2de"
 
 [[projects]]
   branch = "master"
@@ -516,19 +516,18 @@
   revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
-  branch = "master"
-  digest = "1:290b8002a96a5f5c1bd8316884f6e2414f5fb1e46a22bbd5a1ff0d45dc944cb3"
+  digest = "1:8126afc249948c5f48a0dc35c87538bcd5944d01003ce6aaec2f7a9755fcd537"
   name = "golang.org/x/net"
   packages = [
     "context",
     "websocket",
   ]
   pruneopts = "UT"
-  revision = "f04abc6bdfa7a0171a8a0c9fd2ada9391044d056"
+  revision = "a6577fac2d73be281a500b310739095313165611"
 
 [[projects]]
   branch = "master"
-  digest = "1:a8aceea58d5de3b7a40a1ee840e8d9f6a66195a6b1f26185bde64629e8320ff5"
+  digest = "1:709223c660898df28ca16ea060bcf2f5dd3a6f3546d108aa3c2721f576f0e800"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
@@ -536,7 +535,7 @@
     "windows",
   ]
   pruneopts = "UT"
-  revision = "b09afc3d579e346c4a7e4705953acaf6f9e551bd"
+  revision = "c2ed4eda69e7f62900806e4cd6e45f0429f859fa"
 
 [[projects]]
   digest = "1:623bd29e39e30952f3a4d5bc07f222c30e30f95813c749d9e8147bbc4293a774"

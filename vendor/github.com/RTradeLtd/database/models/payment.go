@@ -28,6 +28,15 @@ func NewPaymentManager(db *gorm.DB) *PaymentManager {
 	return &PaymentManager{DB: db}
 }
 
+// FindPaymentByTxHash is used to find a payment by its TxHash
+func (pm *PaymentManager) FindPaymentByTxHash(txHash string) (*Payments, error) {
+	p := Payments{}
+	if check := pm.DB.Where("tx_hash = ?", txHash).First(&p); check.Error != nil {
+		return nil, check.Error
+	}
+	return &p, nil
+}
+
 // NewPayment is used to create a payment in our database
 func (pm *PaymentManager) NewPayment(depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}

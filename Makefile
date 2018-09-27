@@ -18,11 +18,6 @@ vendor:
 	rm -rf vendor
 	# Update standard dependencies
 	dep ensure -v
-	# Generate IPFS dependencies
-	rm -rf vendor/github.com/ipfs/go-ipfs
-	git clone https://github.com/ipfs/go-ipfs.git vendor/github.com/ipfs/go-ipfs
-	( cd vendor/github.com/ipfs/go-ipfs ; git checkout $(IPFSVERSION) ; gx install --local --nofancy )
-	mv vendor/github.com/ipfs/go-ipfs/vendor/* vendor
 	# Vendor ethereum - this step is required for some of the cgo components, as
 	# dep doesn't seem to resolve them
 	go get -u github.com/ethereum/go-ethereum
