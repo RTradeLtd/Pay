@@ -36,15 +36,17 @@ func (qm *QueueManager) parseQueueName(queueName string) error {
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
+	fmt.Println(1)
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(2)
 	qm := QueueManager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
-
+	fmt.Println(3)
 	qm.QueueName = queueName
 	qm.Service = queueName
 
@@ -54,10 +56,11 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 			return nil, err
 		}
 	}
-
+	fmt.Println(4)
 	if err := qm.DeclareQueue(); err != nil {
 		return nil, err
 	}
+	fmt.Println(5)
 	return &qm, nil
 }
 
@@ -111,12 +114,13 @@ func (qm *QueueManager) DeclareQueue() error {
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
 func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+	fmt.Println("connecting to database")
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL})
+		User: dbUser, Password: dbPass, Address: dbURL, Port: "5432"})
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("consuming messages")
 	// consider moving to true for auto-ack
 	msgs, err := qm.Channel.Consume(
 		qm.QueueName, // queue

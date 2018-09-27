@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -37,10 +38,12 @@ var commands = map[string]app.Cmd{
 						Description: "Listens to, and process payment creatoin messages",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
+							fmt.Println("initializing queue")
 							qm, err := queue.Initialize(queue.PaymentCreationQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}
+							fmt.Println("consuming messages")
 							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
