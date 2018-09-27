@@ -99,39 +99,52 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 		return err
 	}
 	var (
+		// current number of confirmations
 		currentConfirmations int
-		lastBlockChecked     int
-		confirmationsNeeded  = c.ConfirmationCount
+		// the last block a check was performed at
+		lastBlockChecked int
+		// the total number of confirmations needed
+		confirmationsNeeded = c.ConfirmationCount
 	)
+	// set the block the tx was confirmed at
 	confirmedBlock := rcpt.BlockNumber
+	// get the current block number
 	currentBlock, err := c.RPC.EthBlockNumber()
 	if err != nil {
 		return err
 	}
+	// set last block checked
 	lastBlockChecked = currentBlock
+	// check if the current block is greater than the confirmed block
 	if currentBlock > confirmedBlock {
+		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
 	}
-	if currentConfirmations > confirmationsNeeded {
-		return nil
-	}
+	// loop until we get the appropriate number of confirmations
 	for currentConfirmations <= confirmationsNeeded {
 		currentBlock, err = c.RPC.EthBlockNumber()
 		if err != nil {
 			return err
 		}
+		// set last block checked
+		lastBlockChecked = currentBlock
+		// if we get a block that was the same as last, temporarily sleep
 		if currentBlock == lastBlockChecked {
 			time.Sleep(time.Second * 15)
 			continue
 		}
+		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
 	}
+	// get the transaction receipt
 	rcpt, err = c.RPC.EthGetTransactionReceipt(tx.Hash().String())
 	if err != nil {
 		return err
 	}
+	// verify the status of the transaction
 	if rcpt.Status != "1" {
 		return errors.New("transaction status is not 1")
 	}
+	// tx was successfully mined
 	return nil
 }

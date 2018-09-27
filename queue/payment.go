@@ -32,11 +32,28 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		if _, err := service.PM.FindPaymentByTxHash(pc.TxHash); err != nil {
+		payment, err := service.PM.FindPaymentByTxHash(pc.TxHash)
+		if err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 				"error":   err.Error(),
 			}).Error("failed to find payment by tx hash")
+			d.Ack(false)
+			continue
+		}
+		if payment.UserName != pc.UserName {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Warn("suspicious message username does not match what is in database")
+			d.Ack(false)
+			continue
+		}
+		if payment.Confirmed {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Warn("payment already confirmed")
+			d.Ack(false)
+			continue
 		}
 		switch pc.Type {
 		case "eth":
