@@ -15,14 +15,15 @@ import (
 */
 type User struct {
 	gorm.Model
-	EthAddress        string `gorm:"type:varchar(255);unique"`
-	UserName          string `gorm:"type:varchar(255);unique"`
-	EmailAddress      string `gorm:"type:varchar(255);unique"`
-	EnterpriseEnabled bool   `gorm:"type:boolean"`
-	AccountEnabled    bool   `gorm:"type:boolean"`
-	APIAccess         bool   `gorm:"type:boolean"`
-	EmailEnabled      bool   `gorm:"type:boolean"`
-	HashedPassword    string `gorm:"type:varchar(255)"`
+	EthAddress        string  `gorm:"type:varchar(255);unique"`
+	UserName          string  `gorm:"type:varchar(255);unique"`
+	EmailAddress      string  `gorm:"type:varchar(255);unique"`
+	EnterpriseEnabled bool    `gorm:"type:boolean"`
+	AccountEnabled    bool    `gorm:"type:boolean"`
+	APIAccess         bool    `gorm:"type:boolean"`
+	EmailEnabled      bool    `gorm:"type:boolean"`
+	HashedPassword    string  `gorm:"type:varchar(255)"`
+	Credits           float64 `gorm:"type:float"`
 	// IPFSKeyNames is an array of IPFS keys this user has created
 	IPFSKeyNames     pq.StringArray `gorm:"type:text[];column:ipfs_key_names"`
 	IPFSKeyIDs       pq.StringArray `gorm:"type:text[];column:ipfs_key_ids"`
@@ -293,6 +294,23 @@ func (um *UserManager) ChangeEthereumAddress(username, ethAddress string) (*User
 	}
 	u.EthAddress = ethAddress
 	if check := um.DB.Model(u).Update("eth_address", ethAddress); check.Error != nil {
+		return nil, check.Error
+	}
+	return &u, nil
+}
+
+// AddCreditsForUser is used to add credits to a users account
+func (um *UserManager) AddCreditsForUser(username string, credits float64) (*User, error) {
+	u := User{}
+	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
+		return nil, check.Error
+	}
+	if u.Credits > 0 {
+		u.Credits = u.Credits + credits
+	} else {
+		u.Credits = credits
+	}
+	if check := um.DB.Model(u).Update("credits", credits); check.Error != nil {
 		return nil, check.Error
 	}
 	return &u, nil

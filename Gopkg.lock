@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "feat/payments"
-  digest = "1:872f2440f0aa9890218c82c070c547a82df784272cef7f35dc8db7222f6e528f"
+  digest = "1:fe8599b4dcda25b8146490c5fa6a11aa19c50d79f1e36fb1769209346b00e303"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -19,7 +19,7 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "4ba7306f59f73b1b35477f0827bceb2f80d2a2de"
+  revision = "d6ab627a00afa9411624c6a624fc70dee6db357f"
 
 [[projects]]
   branch = "master"
@@ -516,14 +516,15 @@
   revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
-  digest = "1:8126afc249948c5f48a0dc35c87538bcd5944d01003ce6aaec2f7a9755fcd537"
+  branch = "master"
+  digest = "1:290b8002a96a5f5c1bd8316884f6e2414f5fb1e46a22bbd5a1ff0d45dc944cb3"
   name = "golang.org/x/net"
   packages = [
     "context",
     "websocket",
   ]
   pruneopts = "UT"
-  revision = "a6577fac2d73be281a500b310739095313165611"
+  revision = "4dfa2610cdf3b287375bbba5b8f2a14d3b01d8de"
 
 [[projects]]
   branch = "master"

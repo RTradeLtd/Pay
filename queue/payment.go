@@ -74,8 +74,15 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.Service,
 		}).Info("payment confirmed")
-		// TODO: Add credits for user based on USD evaluation of transaction
-		d.Ack(false)
+		if _, err = service.UM.AddCreditsForUser(pc.UserName, payment.USDValue); err != nil {
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("failed to add credits for user")
+		}
+		qm.Logger.WithFields(log.Fields{
+			"service": qm.Service,
+		}).Info("credits added for user")
 		continue
 	}
 	return nil
