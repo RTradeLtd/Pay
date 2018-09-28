@@ -27,6 +27,7 @@ type Client struct {
 	ETH               *ethclient.Client
 	RPC               *ethrpc.EthRPC
 	Auth              *bind.TransactOpts
+	RTCAddress        string
 	ConfirmationCount int
 }
 
@@ -195,7 +196,9 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if err != nil {
 		return err
 	}
-	fmt.Println("contract address ", tx.To().String())
+	if tx.To().String() != c.RTCAddress {
+		return errors.New("contract address must be RTC contract address")
+	}
 	fmt.Println("tx confirmed")
 	return nil
 }
