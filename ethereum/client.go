@@ -127,6 +127,7 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	fmt.Println("waiting for confirmations")
 	// loop until we get the appropriate number of confirmations
 	for {
+		fmt.Println("current confirmations ", currentConfirmations)
 		currentBlock, err = c.RPC.EthBlockNumber()
 		if err != nil {
 			return err
