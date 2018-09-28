@@ -6,8 +6,8 @@ temporal-payment-eth:
 .PHONY: cli
 cli:
 	@echo "===================  building Temporal CLI  ==================="
-	rm -f temporal
-	go build -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal
+	rm -f temporal-payment
+	go build -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal-payment
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies

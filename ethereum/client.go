@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -94,8 +95,10 @@ func (c *Client) ProcessEthPaymentTx(txHash string) error {
 
 // WaitForConfirmations is used to wait for enough block confirmations for a tx to be considered valid
 func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) error {
+	fmt.Println("getting tx receipt")
 	rcpt, err := c.RPC.EthGetTransactionReceipt(tx.Hash().String())
 	if err != nil {
+		fmt.Println("failed to get tx receipt")
 		return err
 	}
 	var (
@@ -109,6 +112,7 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	// set the block the tx was confirmed at
 	confirmedBlock := rcpt.BlockNumber
 	// get the current block number
+	fmt.Println("getting current block number")
 	currentBlock, err := c.RPC.EthBlockNumber()
 	if err != nil {
 		return err
@@ -120,8 +124,9 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
 	}
+	fmt.Println("waiting for confirmations")
 	// loop until we get the appropriate number of confirmations
-	for currentConfirmations <= confirmationsNeeded {
+	for {
 		currentBlock, err = c.RPC.EthBlockNumber()
 		if err != nil {
 			return err
@@ -135,28 +140,40 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 		}
 		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
+		if currentConfirmations > confirmationsNeeded {
+			break
+		}
 	}
+	fmt.Println("transaction confirmed, refetching tx receipt")
 	// get the transaction receipt
 	rcpt, err = c.RPC.EthGetTransactionReceipt(tx.Hash().String())
 	if err != nil {
 		return err
 	}
+	fmt.Println("verifying transaction status")
 	// verify the status of the transaction
 	if rcpt.Status != "1" {
 		return errors.New("transaction status is not 1")
 	}
+	fmt.Println("verifying gas usage")
 	// if we are confirming an eth payment tx, than we must
 	// restrict gas limit to 21K, which is base cost of a tx
 	// and the amount of gs required to send ETH. We enforce this
 	// check, because confirming contract transactions requires
 	// additional validation, which normal eth payments dont
-	if ethPayment && rcpt.GasUsed > int(21000) {
+	if ethPayment && rcpt.GasUsed != int(21000) {
 		return errors.New("eth payments can only use maximum of 21K gas")
 	} else if ethPayment && rcpt.GasUsed == int(21000) {
-		// eth tx was successfully mined
+		fmt.Println("tx confirmed")
 		return nil
 	}
-	// TODO: add processing for smart contract transaction
-	// smart contract tx was successfully mined
+	// not an eth payment, needs a bit extra processing
+	if rcpt.GasUsed <= 21000 {
+		return errors.New("bad gas usage, needs to be greater than 21k")
+	}
+	if len(rcpt.Logs) == 0 {
+		return errors.New("no logs were emitted")
+	}
+	fmt.Println("tx confirmed")
 	return nil
 }
