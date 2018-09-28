@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/RTradeLtd/Temporal_Payment-ETH/service"
 	"github.com/RTradeLtd/config"
@@ -55,7 +56,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		switch pc.Type {
+		switch payment.Type {
 		case "eth":
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
@@ -68,10 +69,16 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 			}).Info("ethereum based payment confirmed")
+		default:
+			err = errors.New("unsupported payment type")
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   err.Error(),
+			}).Error("unsupported payment type")
 			d.Ack(false)
 			continue
 		}
-		if _, err := service.PM.ConfirmPayment(pc.TxHash); err != nil {
+		if _, err = service.PM.ConfirmPayment(pc.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 				"error":   err.Error(),
@@ -79,19 +86,19 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.Service,
-		}).Info("payment confirmed")
 		if _, err = service.UM.AddCreditsForUser(pc.UserName, payment.USDValue); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 				"error":   err.Error(),
 			}).Error("failed to add credits for user")
+			d.Ack(false)
+			continue
 		}
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.Service,
 		}).Info("credits added for user")
 		d.Ack(false)
+		continue
 	}
 	return nil
 }
