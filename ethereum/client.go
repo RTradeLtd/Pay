@@ -190,7 +190,12 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if len(rcpt.Logs) == 0 {
 		return errors.New("no logs were emitted")
 	}
-	fmt.Println("contract address ", rcpt.ContractAddress)
+	commonHash := common.HexToHash(tx.Hash().String())
+	eRcpt, err := c.ETH.TransactionReceipt(context.Background(), commonHash)
+	if err != nil {
+		return err
+	}
+	fmt.Println("contract address ", eRcpt.ContractAddress.String())
 	fmt.Println("tx confirmed")
 	return nil
 }
