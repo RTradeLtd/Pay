@@ -190,14 +190,12 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if len(rcpt.Logs) == 0 {
 		return errors.New("no logs were emitted")
 	}
-	/* TODO: implement proper contract address checking.
-			 currently this isn't working, and is pulling an all 0 address
 	commonHash := common.HexToHash(tx.Hash().String())
-	eRcpt, err := c.ETH.TransactionReceipt(context.Background(), commonHash)
+	tx, _, err = c.ETH.TransactionByHash(context.Background(), commonHash)
 	if err != nil {
 		return err
 	}
-	fmt.Println("contract address ", eRcpt.ContractAddress.String())*/
+	fmt.Println("contract address ", tx.To().String())
 	fmt.Println("tx confirmed")
 	return nil
 }
