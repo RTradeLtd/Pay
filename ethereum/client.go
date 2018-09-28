@@ -152,8 +152,7 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	}
 	fmt.Println("verifying transaction status")
 	// verify the status of the transaction
-	if rcpt.Status != "1" {
-		fmt.Println(rcpt.Status)
+	if rcpt.Status != TxStatusSuccess {
 		return errors.New("transaction status is not 1")
 	}
 	fmt.Println("verifying gas usage")
