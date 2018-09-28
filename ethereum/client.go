@@ -133,13 +133,11 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 		if err != nil {
 			return err
 		}
-		// set last block checked
-		lastBlockChecked = currentBlock
 		// if we get a block that was the same as last, temporarily sleep
 		if currentBlock == lastBlockChecked {
 			time.Sleep(time.Second * 15)
-			continue
 		}
+		lastBlockChecked = currentBlock
 		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
 		if currentConfirmations > confirmationsNeeded {
