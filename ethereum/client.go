@@ -93,6 +93,22 @@ func (c *Client) ProcessEthPaymentTx(txHash string) error {
 	return c.WaitForConfirmations(tx, true)
 }
 
+// ProcessRtcPaymentTx is used to process an ERTC payment
+func (c *Client) ProcessRtcPaymentTx(txHash string) error {
+	hash := common.HexToHash(txHash)
+	tx, pending, err := c.ETH.TransactionByHash(context.Background(), hash)
+	if err != nil {
+		return err
+	}
+	if pending {
+		_, err := bind.WaitMined(context.Background(), c.ETH, tx)
+		if err != nil {
+			return err
+		}
+	}
+	return c.WaitForConfirmations(tx, false)
+}
+
 // WaitForConfirmations is used to wait for enough block confirmations for a tx to be considered valid
 func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) error {
 	fmt.Println("getting tx receipt")
@@ -174,6 +190,7 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if len(rcpt.Logs) == 0 {
 		return errors.New("no logs were emitted")
 	}
+	fmt.Println("contract address ", rcpt.ContractAddress)
 	fmt.Println("tx confirmed")
 	return nil
 }

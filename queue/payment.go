@@ -24,6 +24,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.Service,
 		}).Info("new message received")
+
 		pc := PaymentCreation{}
 		if err := json.Unmarshal(d.Body, &pc); err != nil {
 			qm.Logger.WithFields(log.Fields{
@@ -33,6 +34,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
+
 		payment, err := service.PM.FindPaymentByTxHash(pc.TxHash)
 		if err != nil {
 			qm.Logger.WithFields(log.Fields{
@@ -42,6 +44,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
+
 		if payment.UserName != pc.UserName {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
@@ -49,6 +52,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
+
 		if payment.Confirmed {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
@@ -56,19 +60,38 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
+
 		switch payment.Type {
 		case "eth":
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 			}).Info("processing ethereum based payment")
 			if err := service.Client.ProcessEthPaymentTx(pc.TxHash); err != nil {
-				qm.Logger.Error("failed to wait for confirmations")
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.Service,
+					"error":   err.Error(),
+				}).Error("failed to wait for confirmations")
 				d.Ack(false)
 				continue
 			}
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 			}).Info("ethereum based payment confirmed")
+		case "rtc":
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Info("processing rtc based payment")
+			if err := service.Client.ProcessRtcPaymentTx(pc.TxHash); err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.Service,
+					"error":   err.Error(),
+				}).Error("failed to wait for confirmations")
+				d.Ack(false)
+				continue
+			}
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Info("rtc based payment confirmed")
 		default:
 			err = errors.New("unsupported payment type")
 			qm.Logger.WithFields(log.Fields{
@@ -78,6 +101,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
+
 		if _, err = service.PM.ConfirmPayment(pc.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
