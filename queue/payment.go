@@ -57,11 +57,19 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 		}
 		switch pc.Type {
 		case "eth":
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Info("processing ethereum based payment")
 			if err := service.Client.ProcessEthPaymentTx(pc.TxHash); err != nil {
 				qm.Logger.Error("failed to wait for confirmations")
 				d.Ack(false)
 				continue
 			}
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+			}).Info("ethereum based payment confirmed")
+			d.Ack(false)
+			continue
 		}
 		if _, err := service.PM.ConfirmPayment(pc.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{
