@@ -91,7 +91,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 		qm.Logger.WithFields(log.Fields{
 			"service": qm.Service,
 		}).Info("credits added for user")
-		continue
+		d.Ack(false)
 	}
 	return nil
 }
