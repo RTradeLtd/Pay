@@ -36,7 +36,7 @@ type TemporalConfig struct {
 			} `json:"infura"`
 		} `json:"connection"`
 		Contracts struct {
-			PaymentContractAddress string `json:"payment_contract_address"`
+			RTCAddress string `json:"rtc_address"`
 		} `json:"contracts"`
 	} `json:"ethereum"`
 }

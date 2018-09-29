@@ -4,7 +4,7 @@
   unused-packages = true
 
 [[constraint]]
-  branch = "master"
+  branch = "feat/payments"
   name = "github.com/RTradeLtd/config"
 
 [[constraint]]
@@ -12,9 +12,13 @@
   version = "1.9.1"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/lib/pq"
+  branch = "master"
 
 [[constraint]]
-  branch = "master"
   name = "golang.org/x/crypto"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/ipsn/go-ipfs"
+  revision = "43db04bb3e5d6da1c46ee64360e2bf81df327f5e"

@@ -57,6 +57,7 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 	return &Client{
 		ETH:               eClient,
 		RPC:               rpcClient,
+		RTCAddress:        cfg.Ethereum.Contracts.RTCAddress,
 		ConfirmationCount: count}, nil
 }
 

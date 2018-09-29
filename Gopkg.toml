@@ -26,12 +26,12 @@
 
 
 [[constraint]]
-  branch = "master"
   name = "github.com/RTradeLtd/config"
-
-[[constraint]]
   branch = "feat/payments"
+  
+[[constraint]]
   name = "github.com/RTradeLtd/database"
+  branch = "feat/payments"
 
 [[constraint]]
   name = "github.com/ethereum/go-ethereum"
