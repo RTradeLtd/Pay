@@ -192,11 +192,14 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if len(rcpt.Logs) == 0 {
 		return errors.New("no logs were emitted")
 	}
-	commonHash := common.HexToHash(tx.Hash().String())
-	tx, _, err = c.ETH.TransactionByHash(context.Background(), commonHash)
+	// refetch the transaction receipt, using go-ethereum
+	tx, _, err = c.ETH.TransactionByHash(context.Background(), tx.Hash())
 	if err != nil {
 		return err
 	}
+	// verify that the destination address, is the RTC contract address
+	// we dont want to consider a garbage token transfer to be valid, it MUST
+	// be the RTC token
 	if tx.To().String() != c.RTCAddress {
 		return errors.New("contract address must be RTC contract address")
 	}
