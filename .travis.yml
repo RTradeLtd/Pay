@@ -8,6 +8,7 @@ install:
   - go get -u golang.org/x/lint/golint
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   - dep ensure
+  - make vendor
 
 before_script:
   - go vet ./...
