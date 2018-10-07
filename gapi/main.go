@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 
+	request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
 	"github.com/RTradeLtd/config"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func main() {
@@ -26,7 +28,13 @@ func main() {
 	case "server":
 		generateServerAndList("127.0.0.1:9090", "tcp", cfg)
 	case "client":
-		generateClient("127.0.0.1:9090", false)
+		req := &request.SignRequest{
+			Address:      common.HexToAddress("0").String(),
+			Method:       "0",
+			Number:       "0",
+			ChargeAmount: "1",
+		}
+		generateClient("127.0.0.1:9090", false, req)
 	default:
 		err := errors.New("argument nto supported")
 		log.Fatal(err)

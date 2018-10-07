@@ -12,20 +12,14 @@ import (
 
 type Client struct{}
 
-func generateClient(grcServerAddress string, insecure bool) {
+func generateClient(grcServerAddress string, insecure bool, req *request.SignRequest) {
 	conn, err := grpc.Dial(grcServerAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
 	client := pb.NewSignerClient(conn)
-	req := request.SignRequest{
-		Address:      "adress",
-		Method:       "method",
-		Number:       "number",
-		ChargeAmount: "chargeAmount",
-	}
-	resp, err := client.GetSignedMessage(context.Background(), &req)
+	resp, err := client.GetSignedMessage(context.Background(), req)
 	if err != nil {
 		log.Fatal(err)
 	}
