@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -18,14 +19,15 @@ func generateServerAndList(listenAddr, protocol string) {
 	}
 	defer lis.Close()
 	gServer := grpc.NewServer()
-	server := &Service{}
+	server := &Server{}
 	pb.RegisterSignerServer(gServer, server)
 	gServer.Serve(lis)
 }
 
-type Service struct{}
+type Server struct{}
 
-func (s *Service) GetSignedMessage(ctx context.Context, req *request.SignRequest) (*response.SignResponse, error) {
+func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest) (*response.SignResponse, error) {
 	res := &response.SignResponse{}
+	fmt.Println("new message received")
 	return res, nil
 }

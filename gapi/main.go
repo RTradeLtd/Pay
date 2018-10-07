@@ -11,5 +11,14 @@ func main() {
 		err := errors.New("invalid invocation, ./gapi <server>")
 		log.Fatal(err)
 	}
-	generateServerAndList("127.0.0.1:9090", "tcp")
+	switch os.Args[1] {
+	case "server":
+		generateServerAndList("127.0.0.1:9090", "tcp")
+	case "client":
+		generateClient("127.0.0.1:9090", false)
+	default:
+		err := errors.New("argument nto supported")
+		log.Fatal(err)
+	}
+
 }
