@@ -31,8 +31,9 @@ services:
 
   gapi-server:
     image: rtradetech/temporal-payment-gapi-server:latest
-    network_mode: "host" # expose all
+    ports:
+      - 9090:9090
     environment:
-      - CONFIG_DAG=/data/temporal/config.json
+      - CONFIG_PATH=/data/temporal/config.json
     volumes:
       - ${BASE}/data/temporal:/data/temporal

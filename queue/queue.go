@@ -36,17 +36,14 @@ func (qm *QueueManager) parseQueueName(queueName string) error {
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
 func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
-	fmt.Println(1)
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(2)
 	qm := QueueManager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
-	fmt.Println(3)
 	qm.QueueName = queueName
 	qm.Service = queueName
 
@@ -56,11 +53,9 @@ func Initialize(queueName, connectionURL string, publish, service bool) (*QueueM
 			return nil, err
 		}
 	}
-	fmt.Println(4)
 	if err := qm.DeclareQueue(); err != nil {
 		return nil, err
 	}
-	fmt.Println(5)
 	return &qm, nil
 }
 

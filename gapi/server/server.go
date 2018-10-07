@@ -69,6 +69,7 @@ func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest)
 		addrTyped, methodUint8, numberBig, chargeAmountBig,
 	)
 	if err != nil {
+		fmt.Println("failed to generate signed payment message ", err.Error())
 		return nil, err
 	}
 	fmt.Printf("%+v\n", msg)

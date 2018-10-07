@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -37,7 +38,11 @@ func main() {
 			Number:       "0",
 			ChargeAmount: "1",
 		}
-		client.GetSignedPaymentMessage("127.0.0.1:9090", false, req)
+		resp, err := client.GetSignedPaymentMessage("127.0.0.1:9090", false, req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(resp)
 	default:
 		err := errors.New("argument nto supported")
 		log.Fatal(err)

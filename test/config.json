@@ -38,8 +38,8 @@
 	"ethereum": { 
 		"account": {
 			"address": "",
-			"key_file": "/data/ethereum/key",
-			"key_pass": ""
+			"key_file": "/data/temporal/key.json",
+			"key_pass": "password123"
 		},
 		"connection": {
 			"rpc": {
