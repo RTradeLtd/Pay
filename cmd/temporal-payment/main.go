@@ -9,6 +9,7 @@ import (
 	//_ "./docs"
 
 	"github.com/RTradeLtd/Temporal_Payment-ETH/cmd/temporal-payment/app"
+	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/server"
 	"github.com/RTradeLtd/Temporal_Payment-ETH/queue"
 	"github.com/RTradeLtd/config"
 )
@@ -50,6 +51,22 @@ var commands = map[string]app.Cmd{
 							}
 						},
 					},
+				},
+			},
+		},
+	},
+	"gapi": app.Cmd{
+		Blurb:         "run gRPC API related commands",
+		Description:   "allows running gRPC server and client",
+		ChildRequired: true,
+		Children: map[string]app.Cmd{
+			"server": app.Cmd{
+				Blurb:       "run the gapi server",
+				Description: "runs our gRPC API server to generate signed messages",
+				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					if err := server.RunServer("0.0.0.0:9090", "tcp", &cfg); err != nil {
+						log.Fatal(err)
+					}
 				},
 			},
 		},

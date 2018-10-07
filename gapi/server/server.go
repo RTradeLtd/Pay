@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"math/big"
 	"net"
 	"strconv"
@@ -21,10 +20,10 @@ import (
 )
 
 // RunServer allows us to run our GRPC API Server
-func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) {
+func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 	lis, err := net.Listen(protocol, listenAddr)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer lis.Close()
 	gServer := grpc.NewServer()
@@ -33,7 +32,10 @@ func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) {
 		PS: ps,
 	}
 	pb.RegisterSignerServer(gServer, server)
-	gServer.Serve(lis)
+	if err = gServer.Serve(lis); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Server defines our server interface

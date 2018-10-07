@@ -1,0 +1,38 @@
+# Production docker-compose setup for Temporal.
+#
+# Usage:
+#   env API=latest BASE=/my/dir docker-compose -f prod.yml up
+#
+# Data:
+#   - Leave BASE unassigned to use the root directory.
+#   - Generally, component data goes in $BASE/data/$COMPONENT.
+#
+# Configuration:
+#   * temporal:
+#     - configuration file should be in data directory
+#     - set API in env to use desired version
+#   * ipfs, ipfs-cluster:
+#     - configuration files should be in data directory
+#   * minio:
+#     - place private.key, public.crt, etc in $BASE/minio/config to enable SSL
+#     - to set access keys, set MINIO_SECRET_KEY and MINIO_ACCESS_KEY in env
+#
+
+version: '3'
+
+services:
+  runner:
+    image: rtradetech/temporal-payment-runner:latest
+    network_mode: "host" # expose all
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal
+
+  gapi-server:
+    image: rtradetech/temporal-payment-gapi-server:latest
+    network_mode: "host" # expose all
+    environment:
+      - CONFIG_DAG=/data/temporal/config.json
+    volumes:
+      - ${BASE}/data/temporal:/data/temporal

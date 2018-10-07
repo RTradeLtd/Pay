@@ -82,11 +82,13 @@ func (c *Client) UnlockAccount(keys ...string) error {
 }
 
 func (c *Client) ProcessPaymentTx(txHash string) error {
+	fmt.Println("getting tx receipt")
 	hash := common.HexToHash(txHash)
 	tx, pending, err := c.ETH.TransactionByHash(context.Background(), hash)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("tx receipt:\n%+v\n", tx)
 	if pending {
 		_, err := bind.WaitMined(context.Background(), c.ETH, tx)
 		if err != nil {
