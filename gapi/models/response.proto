@@ -1,8 +1,8 @@
 syntax = 'proto3';
 
-package models;
+package response;
 
-message signed_payment_message {
+message SignResponse {
     string h = 1;
     string r = 2;
     string s = 3;
