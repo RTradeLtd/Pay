@@ -33,13 +33,13 @@ var commands = map[string]app.Cmd{
 				Description:   "Used to launch the various queues that interact with our payment backend",
 				ChildRequired: true,
 				Children: map[string]app.Cmd{
-					"payment-creation": app.Cmd{
-						Blurb:       "Payment creation queue",
-						Description: "Listens to, and process payment creatoin messages",
+					"payment-confirmation": app.Cmd{
+						Blurb:       "Payment confirmation queue",
+						Description: "Listens to, and process payment confirmation messages",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
 							mqConnectionURL := cfg.RabbitMQ.URL
 							fmt.Println("initializing queue")
-							qm, err := queue.Initialize(queue.PaymentCreationQueue, mqConnectionURL, false, true)
+							qm, err := queue.Initialize(queue.PaymentConfirmationQueue, mqConnectionURL, false, true)
 							if err != nil {
 								log.Fatal(err)
 							}

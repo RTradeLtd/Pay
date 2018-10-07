@@ -138,8 +138,8 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 	// check the queue name
 	switch qm.Service {
 	// only parse datbase file requests
-	case PaymentCreationQueue:
-		return qm.ProcessEthereumBasedPayment(msgs, db, cfg)
+	case PaymentConfirmationQueue:
+		return qm.ProcessPaymentConfirmation(msgs, db, cfg)
 	default:
 		log.Fatal("invalid queue name")
 	}
