@@ -4,9 +4,9 @@
   unused-packages = true
 
 [[constraint]]
-  branch = "feat/payments"
   name = "github.com/RTradeLtd/config"
-
+  version = "v1.0.3-rc1"
+  
 [[constraint]]
   name = "github.com/jinzhu/gorm"
   version = "1.9.1"

@@ -24,11 +24,12 @@ const (
 
 // Client is our connection to ethereum
 type Client struct {
-	ETH               *ethclient.Client
-	RPC               *ethrpc.EthRPC
-	Auth              *bind.TransactOpts
-	RTCAddress        string
-	ConfirmationCount int
+	ETH                    *ethclient.Client
+	RPC                    *ethrpc.EthRPC
+	Auth                   *bind.TransactOpts
+	RTCAddress             string
+	PaymentContractAddress string
+	ConfirmationCount      int
 }
 
 // NewClient is used to generate our Ethereum client wrapper
@@ -55,10 +56,11 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		count = prodConfirmationCount
 	}
 	return &Client{
-		ETH:               eClient,
-		RPC:               rpcClient,
-		RTCAddress:        cfg.Ethereum.Contracts.RTCAddress,
-		ConfirmationCount: count}, nil
+		ETH:                    eClient,
+		RPC:                    rpcClient,
+		RTCAddress:             cfg.Ethereum.Contracts.RTCAddress,
+		PaymentContractAddress: cfg.Ethereum.Contracts.PaymentContractAddress,
+		ConfirmationCount:      count}, nil
 }
 
 // UnlockAccount is used to unlck our main account
@@ -79,8 +81,7 @@ func (c *Client) UnlockAccount(keys ...string) error {
 	return nil
 }
 
-// ProcessEthPaymentTx is used to process an ethereum payment transaction
-func (c *Client) ProcessEthPaymentTx(txHash string) error {
+func (c *Client) ProcessPaymentTx(txHash string) error {
 	hash := common.HexToHash(txHash)
 	tx, pending, err := c.ETH.TransactionByHash(context.Background(), hash)
 	if err != nil {
@@ -92,27 +93,11 @@ func (c *Client) ProcessEthPaymentTx(txHash string) error {
 			return err
 		}
 	}
-	return c.WaitForConfirmations(tx, true)
-}
-
-// ProcessRtcPaymentTx is used to process an ERTC payment
-func (c *Client) ProcessRtcPaymentTx(txHash string) error {
-	hash := common.HexToHash(txHash)
-	tx, pending, err := c.ETH.TransactionByHash(context.Background(), hash)
-	if err != nil {
-		return err
-	}
-	if pending {
-		_, err := bind.WaitMined(context.Background(), c.ETH, tx)
-		if err != nil {
-			return err
-		}
-	}
-	return c.WaitForConfirmations(tx, false)
+	return c.WaitForConfirmations(tx)
 }
 
 // WaitForConfirmations is used to wait for enough block confirmations for a tx to be considered valid
-func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) error {
+func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 	fmt.Println("getting tx receipt")
 	rcpt, err := c.RPC.EthGetTransactionReceipt(tx.Hash().String())
 	if err != nil {
@@ -173,22 +158,6 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	if rcpt.Status != TxStatusSuccess {
 		return errors.New("transaction status is not 1")
 	}
-	fmt.Println("verifying gas usage")
-	// if we are confirming an eth payment tx, than we must
-	// restrict gas limit to 21K, which is base cost of a tx
-	// and the amount of gs required to send ETH. We enforce this
-	// check, because confirming contract transactions requires
-	// additional validation, which normal eth payments dont
-	if ethPayment && rcpt.GasUsed != int(21000) {
-		return errors.New("eth payments can only use maximum of 21K gas")
-	} else if ethPayment && rcpt.GasUsed == int(21000) {
-		fmt.Println("tx confirmed")
-		return nil
-	}
-	// not an eth payment, needs a bit extra processing
-	if rcpt.GasUsed <= 21000 {
-		return errors.New("bad gas usage, needs to be greater than 21k")
-	}
 	if len(rcpt.Logs) == 0 {
 		return errors.New("no logs were emitted")
 	}
@@ -200,8 +169,8 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction, ethPayment bool) er
 	// verify that the destination address, is the RTC contract address
 	// we dont want to consider a garbage token transfer to be valid, it MUST
 	// be the RTC token
-	if tx.To().String() != c.RTCAddress {
-		return errors.New("contract address must be RTC contract address")
+	if tx.To().String() != c.PaymentContractAddress {
+		return errors.New("destination address must be the payments contract address")
 	}
 	fmt.Println("tx confirmed")
 	return nil

@@ -2,16 +2,15 @@
 
 
 [[projects]]
-  branch = "feat/payments"
-  digest = "1:16e8ce55c27dcee3edff1010589fdce0903e8ed5866046538865e403a152db00"
+  digest = "1:6073672053c39449c034faad5a1ad4b41f82010b3e33390313a328a55ce62963"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "71db51ffba9f785ffe22d8cf8902ac843450405d"
+  revision = "003605e68808d883ea9866bf92af44274f657a47"
+  version = "v1.0.3-rc1"
 
 [[projects]]
-  branch = "feat/payments"
-  digest = "1:5966ebfc85ce93281582501a9d1fef97638e7a66cd8d94402fb5e105450c005f"
+  digest = "1:d22fb4098c62c605f8a66a720ea13c27ac0aa3b49e23ae0a2bed6d62d0eaf9fb"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -19,7 +18,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "d94cf318f21249d81c792d17678613f910d5e41a"
+  revision = "a8629fc1a09dac5cdd6d54660e6618a027fad4ba"
+  version = "v1.0.4-rc2"
 
 [[projects]]
   branch = "master"

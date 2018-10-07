@@ -27,12 +27,12 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  branch = "feat/payments"
+  version = "v1.0.3-rc1"
   
 [[constraint]]
   name = "github.com/RTradeLtd/database"
-  branch = "feat/payments"
-
+  version = "v1.0.4-rc2"
+  
 [[constraint]]
   name = "github.com/ethereum/go-ethereum"
   version = "1.8.16"

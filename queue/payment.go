@@ -73,52 +73,11 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			d.Ack(false)
 			continue
 		}
-		// TODO: ADD CALL TO SEE IF THIS PAYMENT IS ALREADY BEING PROCESSED
-		// THIS WILL REQUIRE PUTTING A FLAG IN THE DB TO INDICATE PROCESSING
-		switch payment.Type {
-		case "eth":
-			// process ethereum payments
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-			}).Info("processing ethereum based payment")
-			// process the payment (waiting for confirmations, status checks, etc...)
-			if err := service.Client.ProcessEthPaymentTx(pc.TxHash); err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.Service,
-					"error":   err.Error(),
-				}).Error("failed to wait for confirmations")
-				d.Ack(false)
-				continue
-			}
-			// payment confirmed
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-			}).Info("ethereum based payment confirmed")
-		case "rtc":
-			// process rtc payments
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-			}).Info("processing rtc based payment")
-			// process the payment (waiting for confirmations, status checks, etc...)
-			if err := service.Client.ProcessRtcPaymentTx(pc.TxHash); err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.Service,
-					"error":   err.Error(),
-				}).Error("failed to wait for confirmations")
-				d.Ack(false)
-				continue
-			}
-			// payment confirmed
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-			}).Info("rtc based payment confirmed")
-		default:
-			// indicates an unsupported payment type
-			err = errors.New("unsupported payment type")
+		if err = service.Client.ProcessPaymentTx(pc.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 				"error":   err.Error(),
-			}).Error("unsupported payment type")
+			}).Error("failed to process payment tx")
 			d.Ack(false)
 			continue
 		}
@@ -132,7 +91,7 @@ func (qm *QueueManager) ProcessEthereumBasedPayment(msgs <-chan amqp.Delivery, d
 			continue
 		}
 		// grant credits to the user
-		if _, err = service.UM.AddCreditsForUser(pc.UserName, payment.USDValue); err != nil {
+		if _, err = service.UM.AddCredits(pc.UserName, payment.USDValue); err != nil {
 			qm.Logger.WithFields(log.Fields{
 				"service": qm.Service,
 				"error":   err.Error(),
