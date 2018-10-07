@@ -9,13 +9,13 @@ It is generated from these files:
 
 It has these top-level messages:
 */
-package models
+package service
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import request "."
-import response "."
+import request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
+import response "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/response"
 
 import (
 	context "golang.org/x/net/context"
