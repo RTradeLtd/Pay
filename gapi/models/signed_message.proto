@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-package temporal.payment.eth;
+package models;
 
 message signed_payment_message {
     string h = 1;
