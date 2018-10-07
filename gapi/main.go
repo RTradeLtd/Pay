@@ -5,11 +5,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/client"
 	request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
+	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/server"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// This is intended to "demo" the GRPC api
 func main() {
 	if len(os.Args) > 2 || len(os.Args) < 2 {
 		err := errors.New("invalid invocation, ./gapi <server>")
@@ -26,7 +29,7 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "server":
-		generateServerAndList("127.0.0.1:9090", "tcp", cfg)
+		server.RunServer("127.0.0.1:9090", "tcp", cfg)
 	case "client":
 		req := &request.SignRequest{
 			Address:      common.HexToAddress("0").String(),
@@ -34,7 +37,7 @@ func main() {
 			Number:       "0",
 			ChargeAmount: "1",
 		}
-		generateClient("127.0.0.1:9090", false, req)
+		client.GetSignedPaymentMessage("127.0.0.1:9090", false, req)
 	default:
 		err := errors.New("argument nto supported")
 		log.Fatal(err)
