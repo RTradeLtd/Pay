@@ -11,7 +11,6 @@ import (
 	request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
 	response "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/response"
 	pb "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/service"
-	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/utils"
 	"github.com/RTradeLtd/Temporal_Payment-ETH/signer"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"
@@ -49,7 +48,6 @@ func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest)
 	addr := req.Address
 	method := req.Method
 	number := req.Number
-	chargeAmount := req.ChargeAmount
 	addrTyped := common.HexToAddress(addr)
 	methodUint64, err := strconv.ParseUint(method, 10, 64)
 	if err != nil {
@@ -60,11 +58,10 @@ func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest)
 	if !valid {
 		return nil, errors.New("failed to convert payment number to big int")
 	}
-	chargeAmountFloat, err := strconv.ParseFloat(chargeAmount, 64)
-	if err != nil {
-		return nil, err
+	chargeAmountBig, valid := new(big.Int).SetString(req.ChargeAmount, 10)
+	if !valid {
+		return nil, errors.New("failed to convert charge amount from string to big int")
 	}
-	chargeAmountBig := utils.FloatToBigInt(chargeAmountFloat)
 	msg, err := s.PS.GenerateSignedPaymentMessagePrefixed(
 		addrTyped, methodUint8, numberBig, chargeAmountBig,
 	)
