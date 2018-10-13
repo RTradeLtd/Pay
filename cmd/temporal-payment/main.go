@@ -8,9 +8,9 @@ import (
 
 	//_ "./docs"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/cmd/temporal-payment/app"
-	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/server"
-	"github.com/RTradeLtd/Temporal_Payment-ETH/queue"
+	"github.com/RTradeLtd/Pay/cmd/temporal-payment/app"
+	"github.com/RTradeLtd/Pay/gapi/server"
+	"github.com/RTradeLtd/Pay/queue"
 	"github.com/RTradeLtd/config"
 )
 

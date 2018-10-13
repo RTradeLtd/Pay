@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/utils"
+	"github.com/RTradeLtd/Pay/utils"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"

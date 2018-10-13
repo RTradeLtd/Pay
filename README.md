@@ -1,8 +1,7 @@
-# Temporal_Payment-ETH
+# Pay
 
-Temporal's Ethereum Based Payment Processor 
-
-The Ethereum payment processor consists of a gRPC API Server, and a queue runner. The gRPC API Server is used to generate signed messages to submit to the payment contract, while the queue runner is responsible for validating the transactions.
+Pay is a service used to facilitate payment for credits on Temporal. It is a seperate package to avoid licensing headaches between go-ethereum and Temporal.
+We used a gRPC API Service to communicate between this service, and the Temporal API.
 
 ## Docker Images:
 

@@ -3,7 +3,7 @@ package ethereum_test
 import (
 	"testing"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/ethereum"
+	"github.com/RTradeLtd/Pay/ethereum"
 	"github.com/RTradeLtd/config"
 )
 

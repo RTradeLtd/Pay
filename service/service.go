@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/RTradeLtd/Temporal_Payment-ETH/ethereum"
+	"github.com/RTradeLtd/Pay/ethereum"
 	"github.com/RTradeLtd/config"
 	"github.com/RTradeLtd/database"
 	"github.com/RTradeLtd/database/models"

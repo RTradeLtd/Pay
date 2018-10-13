@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/response"
-
-	request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
-	pb "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/service"
+	request "github.com/RTradeLtd/Pay/gapi/request"
+	"github.com/RTradeLtd/Pay/gapi/response"
+	pb "github.com/RTradeLtd/Pay/gapi/service"
 	"google.golang.org/grpc"
 )
 
