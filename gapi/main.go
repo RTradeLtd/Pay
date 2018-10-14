@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/client"
-	request "github.com/RTradeLtd/Temporal_Payment-ETH/gapi/request"
-	"github.com/RTradeLtd/Temporal_Payment-ETH/gapi/server"
+	"github.com/RTradeLtd/Pay/gapi/client"
+	"github.com/RTradeLtd/Pay/gapi/request"
+	"github.com/RTradeLtd/Pay/gapi/server"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"
 )

@@ -4,13 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/RTradeLtd/Temporal_Payment-ETH/service"
+	"github.com/RTradeLtd/Pay/service"
 	"github.com/RTradeLtd/config"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
+/*
+func (qm *QueueManager) ProcessDASHPayments(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
+
+}
+*/
 // ProcessPaymentConfirmation is a queue process used to validate eth/rtc payments
 func (qm *QueueManager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
 	service, err := service.GeneratePaymentService(cfg, "infura")

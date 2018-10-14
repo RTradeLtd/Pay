@@ -12,6 +12,7 @@ type TemporalConfig struct {
 	Sendgrid    `json:"sendgrid,omitempty"`
 	Ethereum    `json:"ethereum,omitempty"`
 	Wallets     `json:"wallets,omitempty"`
+	APIKeys     `json:"api_keys,omitempty"`
 }
 
 // API configures the Temporal API
@@ -30,6 +31,7 @@ type API struct {
 	JwtKey               string  `json:"jwt_key"`
 	SizeLimitInGigaBytes string  `json:"size_limit_in_giga_bytes"`
 	Payment              Payment `json:"payment"`
+	LogFile              string  `json:"logfile"`
 }
 
 // Payment configures the GRPC Payment Server API
@@ -125,4 +127,9 @@ type Wallets struct {
 	DASH string `json:"dash"`
 	BTC  string `json:"btc"`
 	LTC  string `json:"ltc"`
+}
+
+// APIKeys are the various API keys we use
+type APIKeys struct {
+	ChainRider string `json:"chain_rider"`
 }
