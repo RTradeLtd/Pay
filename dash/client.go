@@ -1,6 +1,7 @@
 package dash
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,7 +52,7 @@ func (dc *DashClient) ProcessTransaction(txHash string) error {
 	}
 	if tx.Confirmations > dc.ConfirmationCount {
 		fmt.Println("transaction confirmed")
-		return nil
+		return dc.ValidateLockTime(tx.Locktime)
 	}
 	fmt.Println("sleeping for 2 minutes before querying again ")
 	// dash  block time is long, so we can sleep for a bit
@@ -64,9 +65,25 @@ func (dc *DashClient) ProcessTransaction(txHash string) error {
 		}
 		if tx.Confirmations > dc.ConfirmationCount {
 			fmt.Println("transaction confirmed")
-			return nil
+			return dc.ValidateLockTime(tx.Locktime)
 		}
 		fmt.Println("sleeping for 2 minutes before querying again")
 		time.Sleep(time.Minute * 2)
 	}
+}
+
+// ValidateLockTime is used to validate the given lock time compared to the current block height
+func (dc *DashClient) ValidateLockTime(locktime int) error {
+	blockHash, err := dc.C.GetLastBlockHash()
+	if err != nil {
+		return err
+	}
+	block, err := dc.C.GetBlockByHash(blockHash.LastBlockHash)
+	if err != nil {
+		return err
+	}
+	if locktime > block.Height {
+		return errors.New("locktime is greater than block height")
+	}
+	return nil
 }
