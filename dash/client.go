@@ -1,7 +1,6 @@
 package dash
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -49,9 +48,6 @@ func (dc *DashClient) ProcessTransaction(txHash string) error {
 	tx, err := dc.C.TransactionByHash(txHash)
 	if err != nil {
 		return err
-	}
-	if tx.Locktime > 0 {
-		return errors.New("lock time must be equal to 0")
 	}
 	if tx.Confirmations > dc.ConfirmationCount {
 		fmt.Println("transaction confirmed")
