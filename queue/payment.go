@@ -2,7 +2,6 @@ package queue
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/RTradeLtd/Pay/service"
 	"github.com/RTradeLtd/config"
@@ -11,14 +10,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
-/*
-func (qm *QueueManager) ProcessDASHPayments(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-
-}
-*/
 // ProcessPaymentConfirmation is a queue process used to validate eth/rtc payments
 func (qm *QueueManager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	service, err := service.GeneratePaymentService(cfg, "infura")
+	service, err := service.GeneratePaymentService(cfg)
 	if err != nil {
 		return err
 	}
@@ -47,22 +41,25 @@ func (qm *QueueManager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db
 			d.Ack(false)
 			continue
 		}
-		if payment.Blockchain != "ethereum" {
-			err = errors.New("unsupported blockchain, must be ethereum")
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("unsupported blockchain detected")
-			d.Ack(false)
-			continue
+		if payment.Blockchain == "ethereum" {
+			if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.Service,
+					"error":   err.Error(),
+				}).Error("failedto validate payment")
+				d.Ack(false)
+				continue
+			}
 		}
-		if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("failedto validate payment")
-			d.Ack(false)
-			continue
+		if payment.Blockchain == "dash" {
+			if err := service.Dash.ProcessTransaction(payment.TxHash); err != nil {
+				qm.Logger.WithFields(log.Fields{
+					"service": qm.Service,
+					"error":   err.Error(),
+				}).Error("failedto validate payment")
+				d.Ack(false)
+				continue
+			}
 		}
 		if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{

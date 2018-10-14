@@ -5,6 +5,7 @@ import (
 	"time"
 
 	ch "github.com/RTradeLtd/ChainRider-Go"
+	"github.com/RTradeLtd/config"
 )
 
 const (
@@ -19,8 +20,14 @@ type DashClient struct {
 }
 
 // GenerateDashClient is used to generate our dash client to process transactions
-func GenerateDashClient(cfg *ch.ConfigOpts) (*DashClient, error) {
-	c, err := ch.NewClient(cfg)
+func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
+	opts := &ch.ConfigOpts{
+		APIVersion:      "v1",
+		DigitalCurrency: "dash",
+		Blockchain:      "testnet",
+		Token:           cfg.APIKeys.ChainRider,
+	}
+	c, err := ch.NewClient(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -36,26 +43,26 @@ func GenerateDashClient(cfg *ch.ConfigOpts) (*DashClient, error) {
 }
 
 // ProcessTransaction is used to process a tx and wait for confirmations
-func (dc *DashClient) ProcessTransaction(txHash string) (bool, error) {
+func (dc *DashClient) ProcessTransaction(txHash string) error {
 	tx, err := dc.C.TransactionByHash(txHash)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if tx.Locktime > 0 {
-		return false, errors.New("lock time must be equal to 0")
+		return errors.New("lock time must be equal to 0")
 	}
 	if tx.Confirmations > dc.ConfirmationCount {
-		return true, nil
+		return nil
 	}
 	// dash  block time is long, so we can sleep for a bit
 	time.Sleep(time.Minute * 2)
 	for {
 		tx, err = dc.C.TransactionByHash(txHash)
 		if err != nil {
-			return false, err
+			return err
 		}
 		if tx.Confirmations > dc.ConfirmationCount {
-			return true, nil
+			return nil
 		}
 		time.Sleep(time.Minute * 2)
 	}
