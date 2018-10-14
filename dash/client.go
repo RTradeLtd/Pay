@@ -28,6 +28,9 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 		Blockchain:      "testnet",
 		Token:           cfg.APIKeys.ChainRider,
 	}
+	if !dev {
+		opts.Blockchain = "main"
+	}
 	c, err := ch.NewClient(opts)
 	if err != nil {
 		return nil, err
