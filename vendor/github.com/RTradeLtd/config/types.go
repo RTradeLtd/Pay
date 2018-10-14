@@ -13,6 +13,7 @@ type TemporalConfig struct {
 	Ethereum    `json:"ethereum,omitempty"`
 	Wallets     `json:"wallets,omitempty"`
 	APIKeys     `json:"api_keys,omitempty"`
+	Endpoints   `json:"endpoints,omitempty"`
 }
 
 // API configures the Temporal API
@@ -132,4 +133,9 @@ type Wallets struct {
 // APIKeys are the various API keys we use
 type APIKeys struct {
 	ChainRider string `json:"chain_rider"`
+}
+
+// Endpoints are various endpoints we connect to
+type Endpoints struct {
+	MoneroRPC string `json:"monero_rpc"`
 }

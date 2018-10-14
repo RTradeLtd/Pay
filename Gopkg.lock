@@ -10,12 +10,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:e53bdfc045a7cc9024fd6420e7107e3ad3762ae3dd21d56d845a8dca61fdeeef"
+  digest = "1:c674d86e742a40ce4824355c5723205ca5f1a0f6ef99698a1e2d3875e7648fd5"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5f010e3016ed77821f3572995fac175ef2f83718"
-  version = "v1.0.5-rc1"
+  revision = "bd5a62f347a219d80f3881f4522ce124bea7e18b"
+  version = "v1.0.5-rc2"
 
 [[projects]]
   digest = "1:8a1bd68d44b37faec317c6babed10eabd6b1608db7cf022b22da62dbd8d5faac"
@@ -350,6 +350,14 @@
   revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
 
 [[projects]]
+  branch = "master"
+  digest = "1:4ad815036152de1b2876802cd5394e81c30a26f57ac06d59eb56bee1ce4ee342"
+  name = "github.com/sunrisedo/monero"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "54b8f3aa031ed7aabd0e84a3953972487424e410"
+
+[[projects]]
   digest = "1:b3cfb8d82b1601a846417c3f31c03a7961862cb2c98dcf0959c473843e6d9a2b"
   name = "github.com/syndtr/goleveldb"
   packages = [
@@ -527,6 +535,7 @@
     "github.com/onrik/ethrpc",
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
+    "github.com/sunrisedo/monero",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
   ]
