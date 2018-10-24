@@ -8,9 +8,9 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/RTradeLtd/Pay/gapi/request"
-	"github.com/RTradeLtd/Pay/gapi/response"
-	pb "github.com/RTradeLtd/Pay/gapi/service"
+	"github.com/RTradeLtd/Pay/grpc/request"
+	"github.com/RTradeLtd/Pay/grpc/response"
+	pb "github.com/RTradeLtd/Pay/grpc/service"
 	"github.com/RTradeLtd/Pay/signer"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"

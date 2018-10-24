@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/RTradeLtd/Pay/gapi/client"
-	"github.com/RTradeLtd/Pay/gapi/request"
-	"github.com/RTradeLtd/Pay/gapi/server"
+	"github.com/RTradeLtd/Pay/grpc/client"
+	"github.com/RTradeLtd/Pay/grpc/request"
+	"github.com/RTradeLtd/Pay/grpc/server"
 	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"
 )

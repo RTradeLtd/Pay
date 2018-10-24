@@ -8,7 +8,7 @@ import (
 
 	//_ "./docs"
 
-	"github.com/RTradeLtd/Pay/gapi/server"
+	"github.com/RTradeLtd/Pay/grpc/server"
 	"github.com/RTradeLtd/Pay/queue"
 	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"

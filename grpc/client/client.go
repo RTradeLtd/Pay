@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	request "github.com/RTradeLtd/Pay/gapi/request"
-	"github.com/RTradeLtd/Pay/gapi/response"
-	pb "github.com/RTradeLtd/Pay/gapi/service"
+	request "github.com/RTradeLtd/Pay/grpc/request"
+	"github.com/RTradeLtd/Pay/grpc/response"
+	pb "github.com/RTradeLtd/Pay/grpc/service"
 	"google.golang.org/grpc"
 )
 
