@@ -8,9 +8,9 @@ import (
 
 	//_ "./docs"
 
-	"github.com/RTradeLtd/Pay/cmd/temporal-payment/app"
 	"github.com/RTradeLtd/Pay/gapi/server"
 	"github.com/RTradeLtd/Pay/queue"
+	"github.com/RTradeLtd/cmd"
 	"github.com/RTradeLtd/config"
 )
 
@@ -23,18 +23,18 @@ var (
 	tCfg     config.TemporalConfig
 )
 
-var commands = map[string]app.Cmd{
-	"queue": app.Cmd{
+var commands = map[string]cmd.Cmd{
+	"queue": cmd.Cmd{
 		Blurb:         "execute commands for various queues",
 		Description:   "Interact with Temporal's various queue APIs",
 		ChildRequired: true,
-		Children: map[string]app.Cmd{
-			"payment": app.Cmd{
+		Children: map[string]cmd.Cmd{
+			"payment": cmd.Cmd{
 				Blurb:         "Payment queue sub commands",
 				Description:   "Used to launch the various queues that interact with our payment backend",
 				ChildRequired: true,
-				Children: map[string]app.Cmd{
-					"payment-confirmation": app.Cmd{
+				Children: map[string]cmd.Cmd{
+					"payment-confirmation": cmd.Cmd{
 						Blurb:       "Payment confirmation queue",
 						Description: "Listens to, and process payment confirmation messages",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -55,12 +55,12 @@ var commands = map[string]app.Cmd{
 			},
 		},
 	},
-	"gapi": app.Cmd{
+	"gapi": cmd.Cmd{
 		Blurb:         "run gRPC API related commands",
 		Description:   "allows running gRPC server and client",
 		ChildRequired: true,
-		Children: map[string]app.Cmd{
-			"server": app.Cmd{
+		Children: map[string]cmd.Cmd{
+			"server": cmd.Cmd{
 				Blurb:       "run the gapi server",
 				Description: "runs our gRPC API server to generate signed messages",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -74,8 +74,8 @@ var commands = map[string]app.Cmd{
 }
 
 func main() {
-	// create app
-	temporal := app.New(commands, app.Config{
+	// create cmd
+	temporal := cmd.New(commands, cmd.Config{
 		Name:     "Temporal",
 		ExecName: "temporal",
 		Version:  Version,
@@ -84,7 +84,7 @@ func main() {
 
 	// run no-config commands
 	exit := temporal.PreRun(os.Args[1:])
-	if exit == app.CodeOK {
+	if exit == cmd.CodeOK {
 		os.Exit(0)
 	}
 

@@ -138,4 +138,10 @@ type APIKeys struct {
 // Endpoints are various endpoints we connect to
 type Endpoints struct {
 	MoneroRPC string `json:"monero_rpc"`
+	LensGRPC  string `json:"lens_grpc"`
+	MongoDB   struct {
+		URL              string `json:"url"`
+		DB               string `json:"db"`
+		UploadCollection string `json:"uploads"`
+	} `json:"mongodb"`
 }

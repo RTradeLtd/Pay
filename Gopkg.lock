@@ -10,12 +10,20 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:c674d86e742a40ce4824355c5723205ca5f1a0f6ef99698a1e2d3875e7648fd5"
+  digest = "1:624c10d65a64b9bed655388d3c15ce053b9a60c05a7fb963bb9aaa8bc45966bb"
+  name = "github.com/RTradeLtd/cmd"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c20682374c4ac62044aff74c471e7fb71abe8338"
+  version = "v1.0.2"
+
+[[projects]]
+  digest = "1:457e86933f6a08a066ce09cafb5adfc562257dbdb6b2c7f3871100f4fd298455"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bd5a62f347a219d80f3881f4522ce124bea7e18b"
-  version = "v1.0.5-rc2"
+  revision = "259af0cb5fee02c8d887b50fba337b361f4fd7fa"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:8a1bd68d44b37faec317c6babed10eabd6b1608db7cf022b22da62dbd8d5faac"
@@ -350,14 +358,6 @@
   revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4ad815036152de1b2876802cd5394e81c30a26f57ac06d59eb56bee1ce4ee342"
-  name = "github.com/sunrisedo/monero"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "54b8f3aa031ed7aabd0e84a3953972487424e410"
-
-[[projects]]
   digest = "1:b3cfb8d82b1601a846417c3f31c03a7961862cb2c98dcf0959c473843e6d9a2b"
   name = "github.com/syndtr/goleveldb"
   packages = [
@@ -519,6 +519,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/RTradeLtd/ChainRider-Go",
+    "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
@@ -535,7 +536,6 @@
     "github.com/onrik/ethrpc",
     "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
-    "github.com/sunrisedo/monero",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
   ]
