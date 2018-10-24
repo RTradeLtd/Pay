@@ -21,16 +21,9 @@
 version: '3'
 
 services:
-  runner:
-    image: rtradetech/temporal-payment-runner:latest
-    network_mode: "host" # expose all
-    environment:
-      - CONFIG_DAG=/data/temporal/config.json
-    volumes:
-      - ${BASE}/data/temporal:/data/temporal
-
-  gapi-server:
-    image: rtradetech/temporal-payment-gapi-server:latest
+  grpc-server:
+    image: rtradetech/temporal-payment-grpc-server:latest
+    restart: on-failure
     ports:
       - 9090:9090
     environment:
