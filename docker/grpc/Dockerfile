@@ -31,4 +31,4 @@ ENV CONFIG_DAG /temporal/config.json
 COPY ./test/config.json /temporal/config.json
 
 # Set default command
-ENTRYPOINT [ "temporal-payment", "gapi", "server"]
+ENTRYPOINT [ "temporal-payment", "grpc", "server"]

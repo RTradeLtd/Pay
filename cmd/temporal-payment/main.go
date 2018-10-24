@@ -34,7 +34,7 @@ var commands = map[string]cmd.Cmd{
 				Description:   "Used to launch the various queues that interact with our payment backend",
 				ChildRequired: true,
 				Children: map[string]cmd.Cmd{
-					"payment-confirmation": cmd.Cmd{
+					"confirmation": cmd.Cmd{
 						Blurb:       "Payment confirmation queue",
 						Description: "Listens to, and process payment confirmation messages",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
@@ -55,13 +55,13 @@ var commands = map[string]cmd.Cmd{
 			},
 		},
 	},
-	"gapi": cmd.Cmd{
+	"grpc": cmd.Cmd{
 		Blurb:         "run gRPC API related commands",
 		Description:   "allows running gRPC server and client",
 		ChildRequired: true,
 		Children: map[string]cmd.Cmd{
 			"server": cmd.Cmd{
-				Blurb:       "run the gapi server",
+				Blurb:       "run the grpc server",
 				Description: "runs our gRPC API server to generate signed messages",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
 					if err := server.RunServer("0.0.0.0:9090", "tcp", &cfg); err != nil {
