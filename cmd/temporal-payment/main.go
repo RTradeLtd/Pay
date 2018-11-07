@@ -51,6 +51,22 @@ var commands = map[string]cmd.Cmd{
 							}
 						},
 					},
+					"dash": cmd.Cmd{
+						Blurb:       "Dash confirmation queue",
+						Description: "Listens to, and processes dash based payments",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							mqConnectionURL := cfg.RabbitMQ.URL
+							fmt.Println("initializing queue")
+							qm, err := queue.Initialize(queue.DashPaymentConfirmationQueue, mqConnectionURL, false, true)
+							if err != nil {
+								log.Fatal(err)
+							}
+							fmt.Println("consuming messages")
+							if err = qm.ConsumeMessage("", args["dbPass"], args["dbUrl"], args["dbUser"], &cfg); err != nil {
+								log.Fatal(err)
+							}
+						},
+					},
 				},
 			},
 		},
