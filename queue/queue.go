@@ -135,6 +135,8 @@ func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *c
 	// only parse datbase file requests
 	case PaymentConfirmationQueue:
 		return qm.ProcessPaymentConfirmation(msgs, db, cfg)
+	case DashPaymentConfirmationQueue:
+		return qm.ProcessDashPaymentConfirmation(msgs, db, cfg)
 	default:
 		log.Fatal("invalid queue name")
 	}

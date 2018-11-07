@@ -53,7 +53,7 @@ func (qm *Manager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gor
 			}
 		}
 		if payment.Blockchain == "dash" {
-			if err := service.Dash.ProcessTransaction(payment.TxHash); err != nil {
+			if _, err := service.Dash.ProcessTransaction(payment.TxHash); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.Service,
 					"error":   err.Error(),

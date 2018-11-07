@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
+	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
 	// PaymentCreationQueue is a queue used to handle payment processing
 	PaymentCreationQueue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
