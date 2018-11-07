@@ -31,7 +31,7 @@
   
 [[constraint]]
   name = "github.com/RTradeLtd/database"
-  version = "v1.0.5-rc1"
+  version = "v1.0.5-rc2"
   
 [[constraint]]
   name = "github.com/ethereum/go-ethereum"
@@ -53,6 +53,10 @@
   branch = "master"
   name = "github.com/streadway/amqp"
 
+[[constraint]]
+  name = "github.com/RTradeLtd/ChainRider-Go"
+  version = "v1.0.1"
+  
 [prune]
   go-tests = true
   unused-packages = true

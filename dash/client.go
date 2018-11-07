@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	ch "github.com/RTradeLtd/ChainRider-Go"
+	ch "github.com/RTradeLtd/ChainRider-Go/dash"
 	"github.com/RTradeLtd/config"
 )
 
@@ -18,6 +18,12 @@ const (
 type DashClient struct {
 	C                 *ch.Client
 	ConfirmationCount int
+}
+
+type ProcessPaymentOpts struct {
+	Number         int64
+	ChargeAmount   float64
+	PaymentForward *ch.GetPaymentForwardByIDResponse
 }
 
 // GenerateDashClient is used to generate our dash client to process transactions
@@ -44,6 +50,11 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 		dc.ConfirmationCount = prodConfirmationCount
 	}
 	return dc, nil
+}
+
+// ProcessPayment is used to process a dash based payment
+func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
+	return nil
 }
 
 // ProcessTransaction is used to process a tx and wait for confirmations

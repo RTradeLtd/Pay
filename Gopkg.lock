@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:39402c410dc340b07582cf3a243f65cb1df1b0affbece810f3921c0a22f81a82"
+  digest = "1:7ca67e8555e965486c141338442222effb369c2a333befddb74f00c492d7a462"
   name = "github.com/RTradeLtd/ChainRider-Go"
-  packages = ["."]
+  packages = ["dash"]
   pruneopts = "UT"
-  revision = "63972eeba85d6ab0de9a37c4a3455aee883e9901"
-  version = "v1.0.0"
+  revision = "2c0ef3134943c88e41e74326a3bdab8d15052fff"
+  version = "v1.0.2"
 
 [[projects]]
   digest = "1:624c10d65a64b9bed655388d3c15ce053b9a60c05a7fb963bb9aaa8bc45966bb"
@@ -26,7 +26,7 @@
   version = "v1.0.5"
 
 [[projects]]
-  digest = "1:8a1bd68d44b37faec317c6babed10eabd6b1608db7cf022b22da62dbd8d5faac"
+  digest = "1:8262ff8aa9251d40b7d45a1290a8a4d69cb800b1059981a6711aad37a6b59ed3"
   name = "github.com/RTradeLtd/database"
   packages = [
     ".",
@@ -34,8 +34,8 @@
     "utils",
   ]
   pruneopts = "UT"
-  revision = "22ebb8d2e4eff84caffc5d88d7a61b8ae08d299c"
-  version = "v1.0.5-rc1"
+  revision = "bacea9909f5ce92a683c0a4e608dc859fe43a725"
+  version = "v1.0.5-rc2"
 
 [[projects]]
   branch = "master"
@@ -518,7 +518,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/RTradeLtd/ChainRider-Go",
+    "github.com/RTradeLtd/ChainRider-Go/dash",
     "github.com/RTradeLtd/cmd",
     "github.com/RTradeLtd/config",
     "github.com/RTradeLtd/database",

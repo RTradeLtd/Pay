@@ -16,8 +16,14 @@ type PaymentService struct {
 	UM     *models.UserManager
 }
 
+// Opts is used to configure our payment service
+type Opts struct {
+	DashEnabled     bool
+	EthereumEnabled bool
+}
+
 // GeneratePaymentService is used to generate our payment service
-func GeneratePaymentService(cfg *config.TemporalConfig) (*PaymentService, error) {
+func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts) (*PaymentService, error) {
 	dbm, err := database.Initialize(cfg, database.DatabaseOptions{LogMode: true})
 	if err != nil {
 		return nil, err
@@ -25,15 +31,19 @@ func GeneratePaymentService(cfg *config.TemporalConfig) (*PaymentService, error)
 	pm := models.NewPaymentManager(dbm.DB)
 	um := models.NewUserManager(dbm.DB)
 	ps := &PaymentService{PM: pm, UM: um}
-	ethClient, err := ethereum.NewClient(cfg, "infura")
-	if err != nil {
-		return nil, err
+	if opts.EthereumEnabled {
+		ethClient, err := ethereum.NewClient(cfg, "infura")
+		if err != nil {
+			return nil, err
+		}
+		ps.Client = ethClient
 	}
-	ps.Client = ethClient
-	dashClient, err := dash.GenerateDashClient(cfg)
-	if err != nil {
-		return nil, err
+	if opts.DashEnabled {
+		dashClient, err := dash.GenerateDashClient(cfg)
+		if err != nil {
+			return nil, err
+		}
+		ps.Dash = dashClient
 	}
-	ps.Dash = dashClient
 	return ps, nil
 }

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
 )
@@ -12,8 +11,9 @@ type Payments struct {
 	gorm.Model
 	Number         int64   `gorm:"type:integer"`
 	DepositAddress string  `gorm:"type:varchar(255)"`
-	TxHash         string  `gorm:"type:varchar(255)"`
+	TxHash         string  `gorm:"type:varchar(255);unique"`
 	USDValue       float64 `gorm:"type:float"` // USDValue is also a "Credit" value, since 1 USD -> 1 Credit
+	ChargeAmount   float64 `gorm:"type:float"`
 	Blockchain     string  `gorm:"type:varchar(255)"`
 	Type           string  `gorm:"type:varchar(255)"` // ETH, RTC, XMR, BTC, LTC
 	UserName       string  `gorm:"type:varchar(255)"`
@@ -54,10 +54,10 @@ func (pm *PaymentManager) GetLatestPaymentNumber(username string) (int64, error)
 }
 
 // NewPayment is used to create a payment in our database
-func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue float64, blockchain string, paymentType string, username string) (*Payments, error) {
+func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash string, usdValue, chargeAmount float64, blockchain string, paymentType string, username string) (*Payments, error) {
 	p := Payments{}
 	// check for a payment with the number
-	check := pm.DB.Where("number = ?", number).First(&p)
+	check := pm.DB.Where("number = ? AND user_name = ?", number, username).First(&p)
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return nil, check.Error
 	}
@@ -81,6 +81,7 @@ func (pm *PaymentManager) NewPayment(number int64, depositAddress string, txHash
 		UserName:       username,
 		Confirmed:      false,
 		Number:         number,
+		ChargeAmount:   chargeAmount,
 	}
 
 	if check := pm.DB.Create(&p); check.Error != nil {
@@ -117,10 +118,6 @@ func (pm *PaymentManager) UpdatePaymentTxHash(username, txHash string, number in
 	payment, err := pm.FindPaymentByNumber(username, number)
 	if err != nil {
 		return nil, err
-	}
-	numberString := strconv.FormatInt(number, 10)
-	if payment.TxHash != numberString {
-		return nil, errors.New("payment already has an updated tx hash")
 	}
 	payment.TxHash = txHash
 	if check := pm.DB.Model(payment).Update("tx_hash", payment.TxHash); check.Error != nil {

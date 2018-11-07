@@ -12,7 +12,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (qm *QueueManager) setupLogging() error {
+func (qm *Manager) setupLogging() error {
 	logFileName := fmt.Sprintf("/var/log/temporal/%s_serice.log", qm.QueueName)
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0640)
 	if err != nil {
@@ -25,7 +25,7 @@ func (qm *QueueManager) setupLogging() error {
 	return nil
 }
 
-func (qm *QueueManager) parseQueueName(queueName string) error {
+func (qm *Manager) parseQueueName(queueName string) error {
 	host, err := os.Hostname()
 	if err != nil {
 		return err
@@ -35,12 +35,12 @@ func (qm *QueueManager) parseQueueName(queueName string) error {
 }
 
 // Initialize is used to connect to the given queue, for publishing or consuming purposes
-func Initialize(queueName, connectionURL string, publish, service bool) (*QueueManager, error) {
+func Initialize(queueName, connectionURL string, publish, service bool) (*Manager, error) {
 	conn, err := setupConnection(connectionURL)
 	if err != nil {
 		return nil, err
 	}
-	qm := QueueManager{Connection: conn}
+	qm := Manager{Connection: conn}
 	if err := qm.OpenChannel(); err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func setupConnection(connectionURL string) (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func (qm *QueueManager) OpenChannel() error {
+func (qm *Manager) OpenChannel() error {
 	ch, err := qm.Connection.Channel()
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (qm *QueueManager) OpenChannel() error {
 }
 
 // DeclareQueue is used to declare a queue for which messages will be sent to
-func (qm *QueueManager) DeclareQueue() error {
+func (qm *Manager) DeclareQueue() error {
 	// we declare the queue as durable so that even if rabbitmq server stops
 	// our messages won't be lost
 	q, err := qm.Channel.QueueDeclare(
@@ -108,7 +108,7 @@ func (qm *QueueManager) DeclareQueue() error {
 // ConsumeMessage is used to consume messages that are sent to the queue
 // Question, do we really want to ack messages that fail to be processed?
 // Perhaps the error was temporary, and we allow it to be retried?
-func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
+func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	fmt.Println("connecting to database")
 	db, err := database.OpenDBConnection(database.DBOptions{
 		User: dbUser, Password: dbPass, Address: dbURL, Port: "5432"})
@@ -142,7 +142,7 @@ func (qm *QueueManager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, c
 }
 
 // PublishMessage is used to produce messages that are sent to the queue, with a worker queue (one consumer)
-func (qm *QueueManager) PublishMessage(body interface{}) error {
+func (qm *Manager) PublishMessage(body interface{}) error {
 	// we use a persistent delivery mode to combine with the durable queue
 	bodyMarshaled, err := json.Marshal(body)
 	if err != nil {
@@ -165,6 +165,7 @@ func (qm *QueueManager) PublishMessage(body interface{}) error {
 	return nil
 }
 
-func (qm *QueueManager) Close() error {
+// Close is used to close a rabbitmq connection
+func (qm *Manager) Close() error {
 	return qm.Connection.Close()
 }
