@@ -15,11 +15,13 @@ const (
 	dev                   = true
 )
 
+// DashClient is our connection to the dash blockchain via chainrider api
 type DashClient struct {
 	C                 *ch.Client
 	ConfirmationCount int
 }
 
+// ProcessPaymentOpts are parameters needed to validate a payment
 type ProcessPaymentOpts struct {
 	Number         int64
 	ChargeAmount   float64
@@ -54,19 +56,64 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 
 // ProcessPayment is used to process a dash based payment
 func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
-	return nil
+	var (
+		toProcessTransactions []ch.ProcessedTxObject
+		processedTransactions map[string]bool
+		totalAmountSent       = opts.ChargeAmount
+		paymentForwardID      = opts.PaymentForward.PaymentForwardID
+	)
+	if len(opts.PaymentForward.ProcessedTxs) == 0 {
+		// no processed transactions yet, sleep for 2 minutes and then check again
+		time.Sleep(time.Minute * 2)
+	}
+	for {
+		paymentForward, err := dc.C.GetPaymentForwardByID(paymentForwardID)
+		if err != nil {
+			return err
+		}
+		if len(paymentForward.ProcessedTxs) == 0 {
+			// no processed transactions yet, sleep for 2 minutes
+			time.Sleep(time.Minute * 2)
+			continue
+		}
+		// determine which transations we've already processed
+		for _, tx := range paymentForward.ProcessedTxs {
+			if !processedTransactions[tx.TransactionHash] {
+				toProcessTransactions = append(toProcessTransactions, tx)
+			}
+		}
+		// process the actual transactions
+		for _, tx := range toProcessTransactions {
+			if _, err = dc.ProcessTransaction(tx.TransactionHash); err != nil {
+				return err
+			}
+			// get the value of the transaction and add it to the total amount
+			totalAmountSent = totalAmountSent + ch.DuffsToDash(float64(tx.ReceivedAmountDuffs))
+			// set the transaction being processed to true in order to avoid reprocessing
+			processedTransactions[tx.TransactionHash] = true
+		}
+		// if they have paid enough, quit processing
+		if totalAmountSent == opts.ChargeAmount {
+			return nil
+		}
+		// clear to process transactions
+		toProcessTransactions = []ch.ProcessedTxObject{}
+		// sleep temporarily
+		time.Sleep(time.Minute * 2)
+		continue
+	}
 }
 
 // ProcessTransaction is used to process a tx and wait for confirmations
-func (dc *DashClient) ProcessTransaction(txHash string) error {
+func (dc *DashClient) ProcessTransaction(txHash string) (*ch.TransactionByHashResponse, error) {
 	fmt.Println("grabbing transaction")
 	tx, err := dc.C.TransactionByHash(txHash)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if tx.Confirmations > dc.ConfirmationCount {
 		fmt.Println("transaction confirmed")
-		return dc.ValidateLockTime(tx.Locktime)
+		return tx, dc.ValidateLockTime(tx.Locktime)
 	}
 	fmt.Println("sleeping for 2 minutes before querying again ")
 	// dash  block time is long, so we can sleep for a bit
@@ -75,11 +122,11 @@ func (dc *DashClient) ProcessTransaction(txHash string) error {
 		fmt.Println("grabbing tx")
 		tx, err = dc.C.TransactionByHash(txHash)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if tx.Confirmations > dc.ConfirmationCount {
 			fmt.Println("transaction confirmed")
-			return dc.ValidateLockTime(tx.Locktime)
+			return tx, dc.ValidateLockTime(tx.Locktime)
 		}
 		fmt.Println("sleeping for 2 minutes before querying again")
 		time.Sleep(time.Minute * 2)
