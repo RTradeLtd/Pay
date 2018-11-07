@@ -62,25 +62,35 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 		totalAmountSent       = opts.ChargeAmount
 		paymentForwardID      = opts.PaymentForward.PaymentForwardID
 	)
+	fmt.Println("checking for txs to check")
 	if len(opts.PaymentForward.ProcessedTxs) == 0 {
+		fmt.Println("no transactions detected, sleeping")
 		// no processed transactions yet, sleep for 2 minutes and then check again
 		time.Sleep(time.Minute * 2)
 	}
 	for {
+		fmt.Println("checking for txs to check")
 		paymentForward, err := dc.C.GetPaymentForwardByID(paymentForwardID)
 		if err != nil {
 			return err
 		}
 		if len(paymentForward.ProcessedTxs) == 0 {
+			fmt.Println("no transactions detected, sleeping")
 			// no processed transactions yet, sleep for 2 minutes
 			time.Sleep(time.Minute * 2)
 			continue
 		}
+		fmt.Println("new transactions detected")
 		// determine which transations we've already processed
 		for _, tx := range paymentForward.ProcessedTxs {
 			if !processedTransactions[tx.TransactionHash] {
 				toProcessTransactions = append(toProcessTransactions, tx)
 			}
+		}
+		if len(toProcessTransactions) == 0 {
+			fmt.Println("no new transactions to process, sleeping")
+			time.Sleep(time.Minute * 2)
+			continue
 		}
 		// process the actual transactions
 		for _, tx := range toProcessTransactions {
@@ -94,6 +104,7 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 		}
 		// if they have paid enough, quit processing
 		if totalAmountSent == opts.ChargeAmount {
+			fmt.Println("total charge amount reached, processing finished")
 			return nil
 		}
 		// clear to process transactions
