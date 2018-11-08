@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:87890bd7c971a7fe53b1d5548e52cfb6f72864fa1f65395d00fc808b14819f05"
+  digest = "1:0aca9fb0086c5871f7d2ac7a358ac8a8f3bb3eaa56be8efd73edf34180f99fb5"
   name = "github.com/RTradeLtd/ChainRider-Go"
   packages = ["dash"]
   pruneopts = "UT"
-  revision = "4a56daf3be065ea483170f4d48fddbf49348d956"
-  version = "v1.0.3"
+  revision = "835c4a8deba854bf8945903f9d17042e591bb0f5"
+  version = "v1.0.5"
 
 [[projects]]
   digest = "1:624c10d65a64b9bed655388d3c15ce053b9a60c05a7fb963bb9aaa8bc45966bb"

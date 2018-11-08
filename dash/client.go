@@ -56,30 +56,33 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 
 // ProcessPayment is used to process a dash based payment
 func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
+	fmt.Println(1)
 	var (
 		toProcessTransactions []ch.ProcessedTxObject
-		processedTransactions map[string]bool
-		totalAmountSent       = opts.ChargeAmount
+		processedTransactions = make(map[string]bool)
+		totalAmountSent       float64
 		paymentForwardID      = opts.PaymentForward.PaymentForwardID
 	)
-	fmt.Println("checking for txs to check")
 	if len(opts.PaymentForward.ProcessedTxs) == 0 {
 		fmt.Println("no transactions detected, sleeping")
 		// no processed transactions yet, sleep for 2 minutes and then check again
 		time.Sleep(time.Minute * 2)
 	}
+	fmt.Println(2)
 	for {
 		fmt.Println("checking for txs to check")
 		paymentForward, err := dc.C.GetPaymentForwardByID(paymentForwardID)
 		if err != nil {
 			return err
 		}
+		fmt.Println(3)
 		if len(paymentForward.ProcessedTxs) == 0 {
 			fmt.Println("no transactions detected, sleeping")
 			// no processed transactions yet, sleep for 2 minutes
 			time.Sleep(time.Minute * 2)
 			continue
 		}
+		fmt.Println(4)
 		fmt.Println("new transactions detected")
 		// determine which transations we've already processed
 		for _, tx := range paymentForward.ProcessedTxs {
@@ -87,26 +90,33 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 				toProcessTransactions = append(toProcessTransactions, tx)
 			}
 		}
+		fmt.Println(5)
 		if len(toProcessTransactions) == 0 {
 			fmt.Println("no new transactions to process, sleeping")
 			time.Sleep(time.Minute * 2)
 			continue
 		}
+		fmt.Println(6)
+		fmt.Printf("%+v\n", toProcessTransactions)
 		// process the actual transactions
 		for _, tx := range toProcessTransactions {
 			if _, err = dc.ProcessTransaction(tx.TransactionHash); err != nil {
 				return err
 			}
+			txValueFloat := ch.DuffsToDash(float64(int64(tx.ReceivedAmountDuffs)))
+			totalAmountSent = totalAmountSent + txValueFloat
 			// get the value of the transaction and add it to the total amount
-			totalAmountSent = totalAmountSent + ch.DuffsToDash(float64(tx.ReceivedAmountDuffs))
+			fmt.Println("total amount sent ", totalAmountSent)
 			// set the transaction being processed to true in order to avoid reprocessing
 			processedTransactions[tx.TransactionHash] = true
 		}
+		fmt.Println(7)
 		// if they have paid enough, quit processing
-		if totalAmountSent == opts.ChargeAmount {
+		if totalAmountSent >= opts.ChargeAmount {
 			fmt.Println("total charge amount reached, processing finished")
 			return nil
 		}
+		fmt.Println(8)
 		// clear to process transactions
 		toProcessTransactions = []ch.ProcessedTxObject{}
 		// sleep temporarily
@@ -139,6 +149,7 @@ func (dc *DashClient) ProcessTransaction(txHash string) (*ch.TransactionByHashRe
 			fmt.Println("transaction confirmed")
 			return tx, dc.ValidateLockTime(tx.Locktime)
 		}
+		fmt.Println("current confirmation count ", tx.Confirmations)
 		fmt.Println("sleeping for 2 minutes before querying again")
 		time.Sleep(time.Minute * 2)
 	}

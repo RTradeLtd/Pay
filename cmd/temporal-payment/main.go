@@ -124,7 +124,6 @@ func main() {
 				continue
 			}
 		}
-
 	}
 	// load arguments
 	flags := map[string]string{
@@ -134,10 +133,9 @@ func main() {
 		"listenAddress": tCfg.API.Connection.ListenAddress,
 
 		"dbPass": tCfg.Database.Password,
-		"dbURL":  tCfg.Database.URL,
+		"dbUrl":  tCfg.Database.URL,
 		"dbUser": tCfg.Database.Username,
 	}
-
 	// execute
 	os.Exit(temporal.Run(*tCfg, flags, os.Args[1:]))
 }

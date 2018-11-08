@@ -55,7 +55,7 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/ChainRider-Go"
-  version = "v1.0.3"
+  version = "v1.0.5"
   
 [prune]
   go-tests = true
