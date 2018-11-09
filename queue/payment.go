@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/service"
@@ -134,7 +135,7 @@ func (qm *Manager) ProcessDashPaymentConfirmation(msgs <-chan amqp.Delivery, db 
 			d.Ack(false)
 			continue
 		}
-		if _, err = service.PM.ConfirmPayment(paymentForward.ProcessedTxs[0].TransactionHash); err != nil {
+		if _, err = service.PM.ConfirmPayment(fmt.Sprintf("%s-%v", msg.UserName, msg.PaymentNumber)); err != nil {
 			qm.LogError(err, "failed to confirm payment")
 			d.Ack(false)
 			continue

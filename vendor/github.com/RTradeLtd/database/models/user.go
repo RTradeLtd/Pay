@@ -295,10 +295,12 @@ func (um *UserManager) AddCredits(username string, credits float64) (*User, erro
 	if check := um.DB.Where("user_name = ?", username).First(&u); check.Error != nil {
 		return nil, check.Error
 	}
+	fmt.Println("old credit amount ", u.Credits)
 	u.Credits = u.Credits + credits
 	if check := um.DB.Model(&u).Update("credits", u.Credits); check.Error != nil {
 		return nil, check.Error
 	}
+	fmt.Println("new credit amount ", u.Credits)
 	return &u, nil
 }
 

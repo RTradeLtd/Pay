@@ -56,7 +56,6 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 
 // ProcessPayment is used to process a dash based payment
 func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
-	fmt.Println(1)
 	var (
 		toProcessTransactions []ch.ProcessedTxObject
 		processedTransactions = make(map[string]bool)
@@ -68,36 +67,30 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 		// no processed transactions yet, sleep for 2 minutes and then check again
 		time.Sleep(time.Minute * 2)
 	}
-	fmt.Println(2)
 	for {
-		fmt.Println("checking for txs to check")
+		fmt.Println("checking for txs to process")
 		paymentForward, err := dc.C.GetPaymentForwardByID(paymentForwardID)
 		if err != nil {
 			return err
 		}
-		fmt.Println(3)
 		if len(paymentForward.ProcessedTxs) == 0 {
 			fmt.Println("no transactions detected, sleeping")
 			// no processed transactions yet, sleep for 2 minutes
 			time.Sleep(time.Minute * 2)
 			continue
 		}
-		fmt.Println(4)
-		fmt.Println("new transactions detected")
+		fmt.Println("new transaction(s) detected")
 		// determine which transations we've already processed
 		for _, tx := range paymentForward.ProcessedTxs {
 			if !processedTransactions[tx.TransactionHash] {
 				toProcessTransactions = append(toProcessTransactions, tx)
 			}
 		}
-		fmt.Println(5)
 		if len(toProcessTransactions) == 0 {
 			fmt.Println("no new transactions to process, sleeping")
 			time.Sleep(time.Minute * 2)
 			continue
 		}
-		fmt.Println(6)
-		fmt.Printf("%+v\n", toProcessTransactions)
 		// process the actual transactions
 		for _, tx := range toProcessTransactions {
 			if _, err = dc.ProcessTransaction(tx.TransactionHash); err != nil {
@@ -106,17 +99,15 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 			txValueFloat := ch.DuffsToDash(float64(int64(tx.ReceivedAmountDuffs)))
 			totalAmountSent = totalAmountSent + txValueFloat
 			// get the value of the transaction and add it to the total amount
-			fmt.Println("total amount sent ", totalAmountSent)
 			// set the transaction being processed to true in order to avoid reprocessing
 			processedTransactions[tx.TransactionHash] = true
 		}
-		fmt.Println(7)
 		// if they have paid enough, quit processing
 		if totalAmountSent >= opts.ChargeAmount {
 			fmt.Println("total charge amount reached, processing finished")
 			return nil
 		}
-		fmt.Println(8)
+		fmt.Println("still need more funds, sleeping for 2 minutes")
 		// clear to process transactions
 		toProcessTransactions = []ch.ProcessedTxObject{}
 		// sleep temporarily
