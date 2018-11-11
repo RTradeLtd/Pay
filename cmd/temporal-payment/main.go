@@ -45,7 +45,7 @@ var commands = map[string]cmd.Cmd{
 								log.Fatal(err)
 							}
 							fmt.Println("consuming messages")
-							err = qm.ConsumeMessage("", args["dbPass"], args["dbURL"], args["dbUser"], &cfg)
+							err = qm.ConsumeMessage("", args["dbPass"], args["dbUrl"], args["dbUser"], &cfg)
 							if err != nil {
 								log.Fatal(err)
 							}

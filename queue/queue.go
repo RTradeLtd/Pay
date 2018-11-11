@@ -111,7 +111,7 @@ func (qm *Manager) DeclareQueue() error {
 func (qm *Manager) ConsumeMessage(consumer, dbPass, dbURL, dbUser string, cfg *config.TemporalConfig) error {
 	fmt.Println("connecting to database")
 	db, err := database.OpenDBConnection(database.DBOptions{
-		User: dbUser, Password: dbPass, Address: dbURL, Port: cfg.Database.Port, SSLModeDisable: true})
+		User: dbUser, Password: dbPass, Address: dbURL, Port: cfg.Database.Port, SSLModeDisable: false})
 	if err != nil {
 		return err
 	}
