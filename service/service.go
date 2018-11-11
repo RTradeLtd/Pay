@@ -24,7 +24,7 @@ type Opts struct {
 
 // GeneratePaymentService is used to generate our payment service
 func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts) (*PaymentService, error) {
-	dbm, err := database.Initialize(cfg, database.DatabaseOptions{LogMode: true, SSLModeDisable: true})
+	dbm, err := database.Initialize(cfg, database.DatabaseOptions{LogMode: true, SSLModeDisable: false})
 	if err != nil {
 		return nil, err
 	}
