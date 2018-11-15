@@ -62,12 +62,16 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 		totalAmountSent       float64
 		paymentForwardID      = opts.PaymentForward.PaymentForwardID
 	)
+	killTime := time.Now().Add(time.Minute * 30)
 	if len(opts.PaymentForward.ProcessedTxs) == 0 {
 		fmt.Println("no transactions detected, sleeping")
 		// no processed transactions yet, sleep for 2 minutes and then check again
 		time.Sleep(time.Minute * 2)
 	}
 	for {
+		if time.Now().UnixNano() > killTime.UnixNano() {
+			return errors.New("timeout occured while waiting for transaction")
+		}
 		fmt.Println("checking for txs to process")
 		paymentForward, err := dc.C.GetPaymentForwardByID(paymentForwardID)
 		if err != nil {
