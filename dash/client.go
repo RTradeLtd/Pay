@@ -97,7 +97,7 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 		}
 		// process the actual transactions
 		for _, tx := range toProcessTransactions {
-			if _, err = dc.ProcessTransaction(tx.TransactionHash); err != nil {
+			if _, err = dc.ProcessTransaction(tx.TransactionHash, killTime); err != nil {
 				return err
 			}
 			txValueFloat := ch.DuffsToDash(float64(int64(tx.ReceivedAmountDuffs)))
@@ -121,7 +121,7 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts) error {
 }
 
 // ProcessTransaction is used to process a tx and wait for confirmations
-func (dc *DashClient) ProcessTransaction(txHash string) (*ch.TransactionByHashResponse, error) {
+func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time) (*ch.TransactionByHashResponse, error) {
 	fmt.Println("grabbing transaction")
 	tx, err := dc.C.TransactionByHash(txHash)
 	if err != nil {
@@ -135,6 +135,9 @@ func (dc *DashClient) ProcessTransaction(txHash string) (*ch.TransactionByHashRe
 	// dash  block time is long, so we can sleep for a bit
 	time.Sleep(time.Minute * 2)
 	for {
+		if time.Now().UnixNano() > killTime.UnixNano() {
+			return nil, errors.New("timeout occured while waiting for transaction")
+		}
 		fmt.Println("grabbing tx")
 		tx, err = dc.C.TransactionByHash(txHash)
 		if err != nil {
