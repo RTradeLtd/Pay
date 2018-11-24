@@ -2,7 +2,9 @@ package queue
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/service"
@@ -43,7 +45,8 @@ func (qm *Manager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gor
 			d.Ack(false)
 			continue
 		}
-		if payment.Blockchain == "ethereum" {
+		switch payment.Blockchain {
+		case "ethereum":
 			if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.Service,
@@ -52,9 +55,8 @@ func (qm *Manager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gor
 				d.Ack(false)
 				continue
 			}
-		}
-		if payment.Blockchain == "dash" {
-			if _, err := service.Dash.ProcessTransaction(payment.TxHash); err != nil {
+		case "dash":
+			if _, err := service.Dash.ProcessTransaction(payment.TxHash, time.Now().Add(time.Minute*30)); err != nil {
 				qm.Logger.WithFields(log.Fields{
 					"service": qm.Service,
 					"error":   err.Error(),
@@ -62,6 +64,13 @@ func (qm *Manager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gor
 				d.Ack(false)
 				continue
 			}
+		default:
+			qm.Logger.WithFields(log.Fields{
+				"service": qm.Service,
+				"error":   errors.New("invalid blockchain"),
+			}).Error("invalid blockchain")
+			d.Ack(false)
+			continue
 		}
 		if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
 			qm.Logger.WithFields(log.Fields{
