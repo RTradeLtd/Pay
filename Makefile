@@ -1,13 +1,13 @@
-# Build temporal if binary is not already present
-temporal-payment-eth:
+# Build pay binary
+pay:
 	@make cli
 
-# Build Temporal
+# Build pay binary
 .PHONY: cli
 cli:
 	@echo "===================  building Temporal CLI  ==================="
-	rm -f temporal-payment
-	go build -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/temporal-payment
+	rm -f pay
+	go build -ldflags "-X main.Version=$(TEMPORALVERSION)" ./cmd/pay
 	@echo "===================          done           ==================="
 
 # Rebuild vendored dependencies
