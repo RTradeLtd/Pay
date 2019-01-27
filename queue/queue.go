@@ -111,7 +111,7 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 	switch qm.QueueName {
 	case DashPaymentConfirmationQueue:
 		return qm.ProcessDASHPayment(ctx, wg, msgs)
-	case PaymentConfirmationQueue:
+	case EthPaymentConfirmationQueue:
 		return qm.ProcessETHPayment(ctx, wg, msgs)
 	default:
 		return errors.New("invalid queue name")

@@ -23,7 +23,7 @@ type Opts struct {
 }
 
 // GeneratePaymentService is used to generate our payment service
-func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts) (*PaymentService, error) {
+func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts, connectionType string) (*PaymentService, error) {
 	dbm, err := database.Initialize(cfg, database.Options{LogMode: true, SSLModeDisable: false})
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts) (*PaymentSer
 	um := models.NewUserManager(dbm.DB)
 	ps := &PaymentService{PM: pm, UM: um}
 	if opts.EthereumEnabled {
-		ethClient, err := ethereum.NewClient(cfg, "infura")
+		ethClient, err := ethereum.NewClient(cfg, connectionType)
 		if err != nil {
 			return nil, err
 		}

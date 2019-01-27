@@ -10,9 +10,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/RTradeLtd/Pay/grpc/server"
 	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/queue"
+	"github.com/RTradeLtd/Pay/server"
 	"github.com/RTradeLtd/gorm"
 
 	"github.com/RTradeLtd/cmd"
@@ -102,7 +102,50 @@ var commands = map[string]cmd.Cmd{
 				Description:   "Used to launch various payment queue processors",
 				ChildRequired: true,
 				Children: map[string]cmd.Cmd{
-
+					"ethereum": cmd.Cmd{
+						Blurb:       "Ethereum payment confirmation queue",
+						Description: "Used to process and confirm ethereum/rtc based payments",
+						Action: func(cfg config.TemporalConfig, args map[string]string) {
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "dash_consumer.log"), *devMode)
+							if err != nil {
+								fmt.Println("failed to start logger", err)
+								os.Exit(1)
+							}
+							db, err := newDB(cfg, *dbNoSSL)
+							if err != nil {
+								fmt.Println("failed to start db", err)
+								os.Exit(1)
+							}
+							quitChannel := make(chan os.Signal)
+							signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+							waitGroup := &sync.WaitGroup{}
+							go func() {
+								fmt.Println(closeMessage)
+								<-quitChannel
+								cancel()
+							}()
+							for {
+								qm, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, false, logger)
+								if err != nil {
+									fmt.Println("failed to start queue", err)
+									os.Exit(1)
+								}
+								waitGroup.Add(1)
+								err = qm.ConsumeMessages(ctx, waitGroup, db, &cfg)
+								if err != nil && err.Error() != queue.ErrReconnect {
+									fmt.Println("failed to consume messages", err)
+									os.Exit(1)
+								} else if err != nil && err.Error() == queue.ErrReconnect {
+									continue
+								}
+								// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
+								if err == nil {
+									break
+								}
+							}
+							waitGroup.Wait()
+						},
+					},
 					"dash": cmd.Cmd{
 						Blurb:       "Dash payment confirmation queue",
 						Description: "Used to process and confirm dash based payments",

@@ -14,7 +14,7 @@ import (
 
 // ProcessETHPayment is used to process ethereum and rtc based payments
 func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: true, DashEnabled: false})
+	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: true, DashEnabled: false}, "rpc")
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService) {
 	defer wg.Done()
 	qm.l.Info("new ethereum based payment message received")
-	pc := PaymentConfirmation{}
+	pc := EthPaymentConfirmation{}
 	if err := json.Unmarshal(d.Body, &pc); err != nil {
 		qm.l.Error("failed to unmarshal message")
 		d.Ack(false)
@@ -84,7 +84,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 
 // ProcessDASHPayment is used to process dash based payments
 func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true})
+	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true}, "rpc")
 	if err != nil {
 		return err
 	}

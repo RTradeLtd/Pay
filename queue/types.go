@@ -17,10 +17,8 @@ func (qt Queue) String() string {
 var (
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
 	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
-	// PaymentCreationQueue is a queue used to handle payment processing
-	PaymentCreationQueue Queue = "payment-creation-queue"
-	// PaymentConfirmationQueue is a queue used to handle payment confirmations
-	PaymentConfirmationQueue Queue = "payment-confirmation-queue"
+	// EthPaymentConfirmationQueue is a queue used to handle ethereum based payment confirmations
+	EthPaymentConfirmationQueue Queue = "eth-payment-confirmation-queue"
 	// ErrReconnect is an error emitted when a protocol connection error occurs
 	// It is used to signal reconnect of queue consumers and publishers
 	ErrReconnect = "protocol connection error, reconnect"
@@ -39,15 +37,8 @@ type Manager struct {
 	ExchangeName string
 }
 
-// PaymentCreation is for the payment creation queue
-type PaymentCreation struct {
-	TxHash     string `json:"tx_hash"`
-	Blockchain string `json:"blockchain"`
-	UserName   string `json:"user_name"`
-}
-
-// PaymentConfirmation is a message used to confirm a payment
-type PaymentConfirmation struct {
+// EthPaymentConfirmation is a message used to confirm an ethereum based payment
+type EthPaymentConfirmation struct {
 	UserName      string `json:"user_name"`
 	PaymentNumber int64  `json:"payment_number"`
 }

@@ -14,15 +14,13 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-/*
-This is used to generated signed messages that can be submitted to a smart contract in order to process a payment.
-This module is only used for the "frontend" web GUI. Regular API use will incorporate a payment channel style contract
-*/
-
+// PaymentSigner is used to signed payment messages
+// and holds the ecdsa private key we used
 type PaymentSigner struct {
 	Key *ecdsa.PrivateKey
 }
 
+// SignedMessage is the response to a message signing request
 type SignedMessage struct {
 	H             [32]byte       `json:"h"`
 	R             [32]byte       `json:"r"`
@@ -56,6 +54,8 @@ func GeneratePaymentSigner(cfg *config.TemporalConfig) (*PaymentSigner, error) {
 	return &PaymentSigner{Key: pk.PrivateKey}, nil
 }
 
+// GenerateSignedPaymentMessagePrefixed generates a signed payment message. The format is slightly different and involves
+// generating the hash to sign first, prefixing with `"\x19Ethereum Signed Message:\n32"
 func (ps *PaymentSigner) GenerateSignedPaymentMessagePrefixed(ethAddress common.Address, paymentMethod uint8, paymentNumber, chargeAmountInWei *big.Int) (*SignedMessage, error) {
 	//  return keccak256(abi.encodePacked(msg.sender, _paymentNumber, _paymentMethod, _chargeAmountInWei));
 	hashToSign := utils.SoliditySHA3(

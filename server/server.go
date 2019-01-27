@@ -8,15 +8,20 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/RTradeLtd/Pay/grpc/request"
-	"github.com/RTradeLtd/Pay/grpc/response"
-	pb "github.com/RTradeLtd/Pay/grpc/service"
 	"github.com/RTradeLtd/Pay/signer"
 	"github.com/RTradeLtd/config"
+	pb "github.com/RTradeLtd/grpc/pay"
+	"github.com/RTradeLtd/grpc/pay/request"
+	"github.com/RTradeLtd/grpc/pay/response"
 	"github.com/ethereum/go-ethereum/common"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
+
+// Server defines our server interface
+type Server struct {
+	PS *signer.PaymentSigner
+}
 
 // RunServer allows us to run our GRPC API Server
 func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
@@ -35,11 +40,6 @@ func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 		return err
 	}
 	return nil
-}
-
-// Server defines our server interface
-type Server struct {
-	PS *signer.PaymentSigner
 }
 
 // GetSignedMessage allows the caller (client) to request a signed message
@@ -69,7 +69,6 @@ func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest)
 		fmt.Println("failed to generate signed payment message ", err.Error())
 		return nil, err
 	}
-	fmt.Printf("%+v\n", msg)
 	hEncoded := hex.EncodeToString(msg.H[:])
 	rEncoded := hex.EncodeToString(msg.R[:])
 	sEncoded := hex.EncodeToString(msg.S[:])
