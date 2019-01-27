@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/signer"
 	"github.com/RTradeLtd/config"
 	pb "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/grpc/pay/request"
 	"github.com/RTradeLtd/grpc/pay/response"
 	"github.com/ethereum/go-ethereum/common"
+	"go.uber.org/zap"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -26,17 +26,13 @@ type Server struct {
 }
 
 // RunServer is used to initialize and run our grpc payment server
-func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfig) error {
+func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfig, logger *zap.SugaredLogger) error {
 	url := cfg.Pay.Address + ":" + cfg.Pay.Port
 	lis, err := net.Listen(cfg.Protocol, url)
 	if err != nil {
 		return err
 	}
 	defer lis.Close()
-	logger, err := log.NewLogger(cfg.LogDir, false)
-	if err != nil {
-		return err
-	}
 	logger = logger.Named("grpc").Named("server")
 	serverOpts, err := options(
 		cfg.Pay.TLS.CertPath,

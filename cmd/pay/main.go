@@ -106,7 +106,7 @@ var commands = map[string]cmd.Cmd{
 						Blurb:       "Ethereum payment confirmation queue",
 						Description: "Used to process and confirm ethereum/rtc based payments",
 						Action: func(cfg config.TemporalConfig, args map[string]string) {
-							logger, err := log.NewLogger(logPath(cfg.LogDir, "dash_consumer.log"), *devMode)
+							logger, err := log.NewLogger(logPath(cfg.LogDir, "eth_consumer.log"), *devMode)
 							if err != nil {
 								fmt.Println("failed to start logger", err)
 								os.Exit(1)
@@ -203,6 +203,11 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run the grpc server",
 				Description: "runs our gRPC API server to generate signed messages",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
+					logger, err := log.NewLogger(logPath(cfg.LogDir, "pay_grpc_server.log"), *devMode)
+					if err != nil {
+						fmt.Println("failed to start logger", err.Error())
+						os.Exit(1)
+					}
 					quitChannel := make(chan os.Signal)
 					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 					waitGroup := &sync.WaitGroup{}
@@ -211,7 +216,7 @@ var commands = map[string]cmd.Cmd{
 						<-quitChannel
 						cancel()
 					}()
-					if err := server.RunServer(ctx, waitGroup, cfg); err != nil {
+					if err := server.RunServer(ctx, waitGroup, cfg, logger); err != nil {
 						fmt.Println("an error occurred while running grpc server", err.Error())
 						os.Exit(1)
 					}
