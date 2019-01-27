@@ -48,11 +48,12 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		}
 		rpcClient = ethrpc.New(cfg.Ethereum.Connection.INFURA.URL)
 	case "rpc":
-		eClient, err = ethclient.Dial(cfg.Ethereum.Connection.RPC.IP + ":" + cfg.Ethereum.Connection.RPC.Port)
+		url := fmt.Sprintf("http://%s:%s", cfg.Ethereum.Connection.RPC.IP, cfg.Ethereum.Connection.RPC.Port)
+		eClient, err = ethclient.Dial(url)
 		if err != nil {
 			return nil, err
 		}
-		rpcClient = ethrpc.New(cfg.Ethereum.Connection.RPC.IP + ":" + cfg.Ethereum.Connection.RPC.Port)
+		rpcClient = ethrpc.New(url)
 	default:
 		return nil, errors.New("invalid connection type")
 	}
