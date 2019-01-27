@@ -1,0 +1,13 @@
+[Unit]
+Description=Starts the grpc payment server
+After=network.target
+
+[Service]
+User=rtrade
+Group=rtrade
+Type=simple
+PIDFile=/var/run/grpc_pay.pid
+ExecStart=/boot_scripts/pay.sh server
+
+[Install]
+WantedBy=multi-user.target
