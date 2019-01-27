@@ -32,7 +32,6 @@ func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfi
 	if err != nil {
 		return err
 	}
-	defer lis.Close()
 	logger = logger.Named("grpc").Named("server")
 	serverOpts, err := options(
 		cfg.Pay.TLS.CertPath,
