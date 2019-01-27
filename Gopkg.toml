@@ -25,11 +25,11 @@
 #   unused-packages = true
 
 
-[[constraint]]
+[[override]]
   name = "github.com/RTradeLtd/config"
-  branch = "master"
+  branch = "signer/tls"
   
-[[constraint]]
+[[override]]
   name = "github.com/RTradeLtd/database"
   branch = "release/prod-prep"
   

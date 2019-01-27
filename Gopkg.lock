@@ -18,12 +18,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:841587b63a4bc74cc994f1f9c455b7544035d22402f4207ce1bfa95b22642c39"
+  branch = "signer/tls"
+  digest = "1:e0ca7ad0f62bd1edf0e156908ed2df073851e121ea6399341fef4eb20413e441"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4032a28c97452b9733d9bbe96d407c4704b5589f"
+  revision = "cc85dc26a4d1a4a3ed4c528a49c26d52430bd981"
 
 [[projects]]
   branch = "release/prod-prep"
@@ -214,28 +214,12 @@
   version = "v1.5.7"
 
 [[projects]]
-  digest = "1:235ae01f32fb5f12c5f6d2e0e05ab48e651ab31c126e45a4efc4f510810941ac"
-  name = "github.com/jinzhu/gorm"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
-  version = "v1.9.1"
-
-[[projects]]
   branch = "master"
   digest = "1:fd97437fbb6b7dce04132cf06775bd258cce305c44add58eb55ca86c6c325160"
   name = "github.com/jinzhu/inflection"
   packages = ["."]
   pruneopts = "UT"
   revision = "04140366298a54a039076d798123ffa108fff46c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:f44d34fda864bed6d6c71514cd40b2ee097e6e67f745d5d014113e1faa5af8b7"
-  name = "github.com/konsorten/go-windows-terminal-sequences"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b729f2633dfe35f4d1d8a32385f6685610ce1cb5"
 
 [[projects]]
   digest = "1:b18ffc558326ebaed3b4a175617f1e12ed4e3f53d6ebfe5ba372a3de16d22278"
@@ -376,14 +360,6 @@
   version = "v1.0"
 
 [[projects]]
-  digest = "1:dc2d85c13ac22c22a1f3170a41a8e1b897fa05134aaf533f16df44f66a25b4a1"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "a67f783a3814b8729bd2dac5780b5f78f8dbd64d"
-  version = "v1.1.0"
-
-[[projects]]
   digest = "1:919bb3aa6d9d0b67648c219fa4925312bc3c2872da19e818fa769e9c97a2b643"
   name = "github.com/spaolacci/murmur3"
   packages = ["."]
@@ -461,7 +437,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e5c7492fa2b86cae79bfcaefc45f40d9da0872b097cf49ede1441c3470424a9e"
+  digest = "1:fda2b3b91aa5db3648bbf810d4b802a6b022ea1930adbdf1e2c08acc3f486d96"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -470,7 +446,6 @@
     "pbkdf2",
     "scrypt",
     "sha3",
-    "ssh/terminal",
   ]
   pruneopts = "UT"
   revision = "5295e8364332db77d75fce11f1d19c053919a9c9"
@@ -494,12 +469,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c90c6c71771006dd4c843a1af66f29af3fd7afb4937d2c70097f13f7c2a4a464"
+  digest = "1:8bc8ecef1d63576cfab4d08b44a1f255dd67e5b019b7a44837d62380f266a91c"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
-    "windows",
   ]
   pruneopts = "UT"
   revision = "e4b3c5e9061176387e7cea65e4dc5853801f3fb7"
@@ -589,6 +563,8 @@
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/gorm",
     "github.com/RTradeLtd/grpc/pay",
+    "github.com/RTradeLtd/grpc/pay/request",
+    "github.com/RTradeLtd/grpc/pay/response",
     "github.com/ethereum/go-ethereum/accounts/abi",
     "github.com/ethereum/go-ethereum/accounts/abi/bind",
     "github.com/ethereum/go-ethereum/accounts/keystore",
@@ -597,10 +573,7 @@
     "github.com/ethereum/go-ethereum/crypto",
     "github.com/ethereum/go-ethereum/crypto/sha3",
     "github.com/ethereum/go-ethereum/ethclient",
-    "github.com/golang/protobuf/proto",
-    "github.com/jinzhu/gorm",
     "github.com/onrik/ethrpc",
-    "github.com/sirupsen/logrus",
     "github.com/streadway/amqp",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
