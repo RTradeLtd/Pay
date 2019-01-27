@@ -41,7 +41,12 @@ func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfi
 	if err != nil {
 		return err
 	}
-	serverService := &Server{}
+	// generate our signer
+	s, err := signer.GeneratePaymentSigner(&cfg)
+	if err != nil {
+		return err
+	}
+	serverService := &Server{PS: s}
 	gServer := grpc.NewServer(serverOpts...)
 	pb.RegisterSignerServer(gServer, serverService)
 	// allow for graceful closure if context is cancelled
@@ -61,26 +66,6 @@ func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfi
 	logger.Infow("spinning up server", "address", url)
 	return gServer.Serve(lis)
 }
-
-/*
-// RunServer allows us to run our GRPC API Server
-func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
-	lis, err := net.Listen(protocol, listenAddr)
-	if err != nil {
-		return err
-	}
-	defer lis.Close()
-	gServer := grpc.NewServer()
-	ps, err := signer.GeneratePaymentSigner(cfg)
-	server := &Server{
-		PS: ps,
-	}
-	pb.RegisterSignerServer(gServer, server)
-	if err = gServer.Serve(lis); err != nil {
-		return err
-	}
-	return nil
-}*/
 
 // GetSignedMessage allows the caller (client) to request a signed message
 func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest) (*response.SignResponse, error) {
