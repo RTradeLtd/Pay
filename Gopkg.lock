@@ -49,9 +49,10 @@
   revision = "d2072fe8bb4a46e42fe4f8097f8c015cac19b08c"
 
 [[projects]]
-  digest = "1:9cbec953ea942d038576bc919bc8bc2196067fc3967fcc7c2fbef066fc135db1"
+  digest = "1:664a2949dc243e524730b976ecf19583b0a3d36f37d1cc3102051dbb9fc35acb"
   name = "github.com/RTradeLtd/grpc"
   packages = [
+    "middleware",
     "pay",
     "pay/request",
     "pay/response",
@@ -163,13 +164,15 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
+  digest = "1:9d6dc4d6de69b330d0de86494d6db90c09848c003d5db748f40c925f865c8534"
   name = "github.com/golang/protobuf"
   packages = [
+    "jsonpb",
     "proto",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
+    "ptypes/struct",
     "ptypes/timestamp",
   ]
   pruneopts = "UT"
@@ -183,6 +186,21 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  digest = "1:6d9ec638c0f60d01a25e43940f20dff30cf8b468371ea4df54cbc5b73e07e223"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
+  packages = [
+    ".",
+    "logging",
+    "logging/zap",
+    "logging/zap/ctxzap",
+    "tags",
+    "tags/zap",
+  ]
+  pruneopts = "UT"
+  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -562,6 +580,7 @@
     "github.com/RTradeLtd/database",
     "github.com/RTradeLtd/database/models",
     "github.com/RTradeLtd/gorm",
+    "github.com/RTradeLtd/grpc/middleware",
     "github.com/RTradeLtd/grpc/pay",
     "github.com/RTradeLtd/grpc/pay/request",
     "github.com/RTradeLtd/grpc/pay/response",
@@ -573,6 +592,9 @@
     "github.com/ethereum/go-ethereum/crypto",
     "github.com/ethereum/go-ethereum/crypto/sha3",
     "github.com/ethereum/go-ethereum/ethclient",
+    "github.com/grpc-ecosystem/go-grpc-middleware",
+    "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap",
+    "github.com/grpc-ecosystem/go-grpc-middleware/tags",
     "github.com/onrik/ethrpc",
     "github.com/streadway/amqp",
     "go.uber.org/zap",
@@ -580,6 +602,7 @@
     "go.uber.org/zap/zaptest/observer",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

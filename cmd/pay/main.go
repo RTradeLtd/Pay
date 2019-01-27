@@ -203,10 +203,19 @@ var commands = map[string]cmd.Cmd{
 				Blurb:       "run the grpc server",
 				Description: "runs our gRPC API server to generate signed messages",
 				Action: func(cfg config.TemporalConfig, args map[string]string) {
-					if err := server.RunServer("0.0.0.0:9090", "tcp", &cfg); err != nil {
+					quitChannel := make(chan os.Signal)
+					signal.Notify(quitChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+					waitGroup := &sync.WaitGroup{}
+					go func() {
+						fmt.Println(closeMessage)
+						<-quitChannel
+						cancel()
+					}()
+					if err := server.RunServer(ctx, waitGroup, cfg); err != nil {
 						fmt.Println("an error occurred while running grpc server", err.Error())
 						os.Exit(1)
 					}
+					waitGroup.Wait()
 				},
 			},
 		},

@@ -7,7 +7,9 @@ import (
 	"math/big"
 	"net"
 	"strconv"
+	"sync"
 
+	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/signer"
 	"github.com/RTradeLtd/config"
 	pb "github.com/RTradeLtd/grpc/pay"
@@ -23,6 +25,49 @@ type Server struct {
 	PS *signer.PaymentSigner
 }
 
+// RunServer is used to initialize and run our grpc payment server
+func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfig) error {
+	url := cfg.Pay.Address + ":" + cfg.Pay.Port
+	lis, err := net.Listen(cfg.Protocol, url)
+	if err != nil {
+		return err
+	}
+	defer lis.Close()
+	logger, err := log.NewLogger(cfg.LogDir, false)
+	if err != nil {
+		return err
+	}
+	logger = logger.Named("grpc").Named("server")
+	serverOpts, err := options(
+		cfg.Pay.TLS.CertPath,
+		cfg.Pay.TLS.KeyPath,
+		cfg.Pay.AuthKey,
+		logger)
+	if err != nil {
+		return err
+	}
+	serverService := &Server{}
+	gServer := grpc.NewServer(serverOpts...)
+	pb.RegisterSignerServer(gServer, serverService)
+	// allow for graceful closure if context is cancelled
+	wg.Add(1)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Info("shutting server down")
+				gServer.GracefulStop()
+				wg.Done()
+				return
+			}
+		}
+	}()
+	// start the server
+	logger.Infow("spinning up server", "address", url)
+	return gServer.Serve(lis)
+}
+
+/*
 // RunServer allows us to run our GRPC API Server
 func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 	lis, err := net.Listen(protocol, listenAddr)
@@ -40,7 +85,7 @@ func RunServer(listenAddr, protocol string, cfg *config.TemporalConfig) error {
 		return err
 	}
 	return nil
-}
+}*/
 
 // GetSignedMessage allows the caller (client) to request a signed message
 func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest) (*response.SignResponse, error) {

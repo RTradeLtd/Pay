@@ -49,6 +49,19 @@
   name = "github.com/RTradeLtd/ChainRider-Go"
   branch = "master"
   
+[[constraint]]
+  name = "go.uber.org/zap"
+  version = "v1.9.1"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.15.0"
+
+[[override]]
+  name = "github.com/golang/protobuf"
+version = "1.2.0"
+
+
 [prune]
   go-tests = true
   unused-packages = true
