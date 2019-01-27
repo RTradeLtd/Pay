@@ -41,7 +41,7 @@ func GenerateConfig(configPath string) error {
 }
 
 func (t *TemporalConfig) setDefaults() {
-	if t.LogFile == "" {
-		t.LogFile = "/var/log/temporal/api_service.log"
+	if t.LogDir == "" {
+		t.LogDir = "/var/log/temporal/"
 	}
 }

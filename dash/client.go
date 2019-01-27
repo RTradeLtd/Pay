@@ -39,10 +39,7 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 	if !dev {
 		opts.Blockchain = "main"
 	}
-	c, err := ch.NewClient(opts)
-	if err != nil {
-		return nil, err
-	}
+	c := ch.NewClient(opts)
 	dc := &DashClient{
 		C: c,
 	}

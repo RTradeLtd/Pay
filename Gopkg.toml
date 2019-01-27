@@ -27,27 +27,19 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/config"
-  version = "v1.0.5-rc2"
+  branch = "master"
   
 [[constraint]]
   name = "github.com/RTradeLtd/database"
-  version = "v1.0.5-rc2"
+  branch = "release/prod-prep"
   
 [[constraint]]
-  name = "github.com/ethereum/go-ethereum"
-  version = "1.8.16"
-
-[[constraint]]
-  name = "github.com/jinzhu/gorm"
-  version = "1.9.1"
+  name = "github.com/ethereum/go-ethereum" 
+  version = "1.8.20"
 
 [[constraint]]
   branch = "master"
   name = "github.com/onrik/ethrpc"
-
-[[constraint]]
-  name = "github.com/sirupsen/logrus"
-  version = "1.1.0"
 
 [[constraint]]
   branch = "master"
@@ -55,7 +47,7 @@
 
 [[constraint]]
   name = "github.com/RTradeLtd/ChainRider-Go"
-  version = "v1.0.5"
+  branch = "master"
   
 [prune]
   go-tests = true

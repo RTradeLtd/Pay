@@ -1,161 +1,168 @@
 package queue
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
+	"sync"
 
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/service"
-	"github.com/RTradeLtd/config"
-	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
-// ProcessPaymentConfirmation is a queue process used to validate eth/rtc payments
-func (qm *Manager) ProcessPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	service, err := service.GeneratePaymentService(cfg, &service.Opts{EthereumEnabled: true, DashEnabled: true})
+// ProcessETHPayment is used to process ethereum and rtc based payments
+func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: true, DashEnabled: false})
 	if err != nil {
 		return err
 	}
-	qm.Logger.WithFields(log.Fields{
-		"service": qm.Service,
-	}).Info("processing payment confirmations")
-	for d := range msgs {
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.Service,
-		}).Info("new message received")
-		pc := PaymentConfirmation{}
-		if err := json.Unmarshal(d.Body, &pc); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("failed to unmarshal message")
-			d.Ack(false)
-			continue
+	qm.l.Info("processing payment confirmations")
+	for {
+		select {
+		case d := <-msgs:
+			wg.Add(1)
+			go qm.processETHPayment(d, wg, service)
+		case <-ctx.Done():
+			qm.Close()
+			wg.Done()
+			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
-		payment, err := service.PM.FindPaymentByNumber(pc.UserName, pc.PaymentNumber)
-		if err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("failed to find payment")
-			d.Ack(false)
-			continue
-		}
-		switch payment.Blockchain {
-		case "ethereum":
-			if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.Service,
-					"error":   err.Error(),
-				}).Error("failedto validate payment")
-				d.Ack(false)
-				continue
-			}
-		case "dash":
-			if _, err := service.Dash.ProcessTransaction(payment.TxHash, time.Now().Add(time.Minute*30)); err != nil {
-				qm.Logger.WithFields(log.Fields{
-					"service": qm.Service,
-					"error":   err.Error(),
-				}).Error("failedto validate payment")
-				d.Ack(false)
-				continue
-			}
-		default:
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   errors.New("invalid blockchain"),
-			}).Error("invalid blockchain")
-			d.Ack(false)
-			continue
-		}
-		if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("failed to confirm payment in db")
-			d.Ack(false)
-			continue
-		}
-		// grant credits to the user
-		if _, err = service.UM.AddCredits(pc.UserName, payment.USDValue); err != nil {
-			qm.Logger.WithFields(log.Fields{
-				"service": qm.Service,
-				"error":   err.Error(),
-			}).Error("failed to add credits for user")
-			d.Ack(false)
-			continue
-		}
-		qm.Logger.WithFields(log.Fields{
-			"service": qm.Service,
-		}).Info("payment confirmed and credits granted")
-		d.Ack(false)
 	}
-	return nil
 }
 
-// ProcessDashPaymentConfirmation is used to process a dash payment confirmation message
-func (qm *Manager) ProcessDashPaymentConfirmation(msgs <-chan amqp.Delivery, db *gorm.DB, cfg *config.TemporalConfig) error {
-	service, err := service.GeneratePaymentService(cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true})
+func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService) {
+	defer wg.Done()
+	qm.l.Info("new ethereum based payment message received")
+	pc := PaymentConfirmation{}
+	if err := json.Unmarshal(d.Body, &pc); err != nil {
+		qm.l.Error("failed to unmarshal message")
+		d.Ack(false)
+		return
+	}
+	payment, err := service.PM.FindPaymentByNumber(pc.UserName, pc.PaymentNumber)
+	if err != nil {
+		qm.l.Error("failed to find payment message", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	switch payment.Blockchain {
+	case "ethereum":
+		if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
+			qm.l.Error("failed to validate ethereum payment", "error", err.Error())
+			d.Ack(false)
+			return
+		}
+	default:
+		qm.l.Error("invalid blockchain for crypto payments", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
+		qm.l.Error("failed to confirm payment in database", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	// grant credits to the user
+	if _, err = service.UM.AddCredits(pc.UserName, payment.USDValue); err != nil {
+		qm.l.Error("failed to add credits for user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	qm.l.Info("successfully confirmed payment")
+	d.Ack(false)
+	return
+}
+
+// ProcessDASHPayment is used to process dash based payments
+func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	service, err := service.GeneratePaymentService(qm.cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true})
 	if err != nil {
 		return err
 	}
-	qm.LogInfo("processing payment messages")
-	for d := range msgs {
-		qm.LogInfo("new message received")
-		msg := DashPaymentConfirmation{}
-		if err = json.Unmarshal(d.Body, &msg); err != nil {
-			qm.LogError(err, "failed to unmarshal message")
-			d.Ack(false)
-			continue
+	qm.l.Info("processing dash payment confirmations")
+	for {
+		select {
+		case d := <-msgs:
+			wg.Add(1)
+			go qm.processDashPaymentConfirmation(d, wg, service)
+		case <-ctx.Done():
+			qm.Close()
+			wg.Done()
+			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
 		}
-		paymentForward, err := service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
-		if err != nil {
-			qm.LogError(err, "failed to get payment forward by id")
-			d.Ack(false)
-			continue
-		}
-		payment, err := service.PM.FindPaymentByNumber(msg.UserName, msg.PaymentNumber)
-		if err != nil {
-			qm.LogError(err, "failed to search for payment")
-			d.Ack(false)
-			continue
-		}
-		opts := dash.ProcessPaymentOpts{
-			Number:         payment.Number,
-			ChargeAmount:   payment.ChargeAmount,
-			PaymentForward: paymentForward,
-		}
-		if err = service.Dash.ProcessPayment(&opts); err != nil {
-			qm.LogError(err, "failed to process payment")
-		}
-		// during processing, the user may have sent additional payments so need to re-grab them
-		paymentForward, err = service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
-		if err != nil {
-			qm.LogError(err, "failed to get payment forward by id")
-			d.Ack(false)
-			continue
-		}
-		if len(paymentForward.ProcessedTxs) == 0 {
-			qm.LogError(err, "no processed transactions detected")
-			d.Ack(false)
-			continue
-		}
-		if _, err = service.PM.ConfirmPayment(fmt.Sprintf("%s-%v", msg.UserName, msg.PaymentNumber)); err != nil {
-			qm.LogError(err, "failed to confirm payment")
-			d.Ack(false)
-			continue
-		}
-		if _, err = service.UM.AddCredits(msg.UserName, payment.USDValue); err != nil {
-			qm.LogError(err, "failed to grant credits")
-			d.Ack(false)
-			continue
-		}
-		qm.LogInfo("credits granted")
-		continue
 	}
-	return nil
+}
+
+func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService) {
+	defer wg.Done()
+	qm.l.Info("new dash payment message received")
+	msg := DashPaymentConfirmation{}
+	if err := json.Unmarshal(d.Body, &msg); err != nil {
+		qm.l.Error("failed to unmarshal message", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	paymentForward, err := service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
+	if err != nil {
+		qm.l.Error("failed to get payment forward by id", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	payment, err := service.PM.FindPaymentByNumber(msg.UserName, msg.PaymentNumber)
+	if err != nil {
+		qm.l.Error("failed to search for payment by number", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	opts := dash.ProcessPaymentOpts{
+		Number:         payment.Number,
+		ChargeAmount:   payment.ChargeAmount,
+		PaymentForward: paymentForward,
+	}
+	if err = service.Dash.ProcessPayment(&opts); err != nil {
+		qm.l.Error("failed to process dash payment", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	// during processing, the user may have sent additional payments so need to re-grab them
+	paymentForward, err = service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
+	if err != nil {
+		qm.l.Error("failed to get payment forward by id", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if len(paymentForward.ProcessedTxs) == 0 {
+		qm.l.Error("no processed transactions detected", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err = service.PM.ConfirmPayment(fmt.Sprintf("%s-%v", msg.UserName, msg.PaymentNumber)); err != nil {
+		qm.l.Error("failed to confirm payment", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err = service.UM.AddCredits(msg.UserName, payment.USDValue); err != nil {
+		qm.l.Error("failed to add credits to user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	qm.l.Info("granted credits")
+	d.Ack(false)
+	return
 }

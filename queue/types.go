@@ -1,28 +1,41 @@
 package queue
 
 import (
-	log "github.com/sirupsen/logrus"
-
+	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/gorm"
 	"github.com/streadway/amqp"
+	"go.uber.org/zap"
 )
+
+// Queue is a typed string used to declare the various queue names
+type Queue string
+
+func (qt Queue) String() string {
+	return string(qt)
+}
 
 var (
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
-	DashPaymentConfirmationQueue = "dash-payment-confirmation-queue"
+	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
 	// PaymentCreationQueue is a queue used to handle payment processing
-	PaymentCreationQueue = "payment-creation-queue"
+	PaymentCreationQueue Queue = "payment-creation-queue"
 	// PaymentConfirmationQueue is a queue used to handle payment confirmations
-	PaymentConfirmationQueue = "payment-confirmation-queue"
+	PaymentConfirmationQueue Queue = "payment-confirmation-queue"
+	// ErrReconnect is an error emitted when a protocol connection error occurs
+	// It is used to signal reconnect of queue consumers and publishers
+	ErrReconnect = "protocol connection error, reconnect"
 )
 
 // Manager is a helper struct to interact with rabbitmq
 type Manager struct {
-	Connection   *amqp.Connection
-	Channel      *amqp.Channel
-	Queue        *amqp.Queue
-	Logger       *log.Logger
-	QueueName    string
-	Service      string
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	queue        *amqp.Queue
+	l            *zap.SugaredLogger
+	db           *gorm.DB
+	cfg          *config.TemporalConfig
+	ErrCh        chan *amqp.Error
+	QueueName    Queue
 	ExchangeName string
 }
 
