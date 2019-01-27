@@ -87,6 +87,7 @@ func (s *Server) GetSignedMessage(ctx context.Context, req *request.SignRequest)
 	if !valid {
 		return nil, errors.New("failed to convert charge amount from string to big int")
 	}
+	fmt.Println("signing payment message")
 	msg, err := s.PS.GenerateSignedPaymentMessagePrefixed(
 		addrTyped, methodUint8, numberBig, chargeAmountBig,
 	)
