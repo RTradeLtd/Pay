@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/service"
@@ -56,8 +57,25 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 	}
 	switch payment.Blockchain {
 	case "ethereum":
-		if err = service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
-			qm.l.Error("failed to validate ethereum payment", "error", err.Error())
+		// occassionally we may be given the hash before our node can find it in the blockchain or mempool
+		// if this happens, we will wait 15 seconds before trying again. a total of 3 attempts are made
+		// after which, we stop processing this transaction
+		var found bool
+		for count := 0; count < 3; count++ {
+			if err := service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
+				if count < 3 {
+					qm.l.Warn("failed to find payment, waiting before attempting again", "error", err.Error())
+					time.Sleep(time.Second * 15)
+					continue
+				}
+			} else {
+				found = true
+				break
+			}
+		}
+		// make sure we were able to find the transaction
+		if !found {
+			qm.l.Error("failed to find payment transaction after 3 repeated attempts")
 			d.Ack(false)
 			return
 		}
