@@ -153,7 +153,7 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		ChargeAmount:   payment.ChargeAmount,
 		PaymentForward: paymentForward,
 	}
-	if err = service.Dash.ProcessPayment(&opts); err != nil {
+	if err = service.Dash.ProcessPayment(&opts, qm.l.With("user", msg.UserName)); err != nil {
 		qm.l.Error("failed to process dash payment", "error", err.Error())
 		d.Ack(false)
 		return
