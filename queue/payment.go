@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -170,7 +169,7 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		d.Ack(false)
 		return
 	}
-	if _, err = service.PM.ConfirmPayment(fmt.Sprintf("%s-%v", msg.UserName, msg.PaymentNumber)); err != nil {
+	if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
 		qm.l.Error("failed to confirm payment", "error", err.Error())
 		d.Ack(false)
 		return
