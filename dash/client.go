@@ -129,7 +129,7 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 	}
 	// determine time to sleep in minutes
 	// we multiply by 2 since 1 confirmation means 1 block, for which block time is 2 minutes
-	timeToSleep := time.Minute * time.Duration((tx.Confirmations-dc.ConfirmationCount)*2)
+	timeToSleep := time.Minute * time.Duration((dc.ConfirmationCount-tx.Confirmations)*2)
 	logger.Infof("transaction not yet confirmed, sleeping for %v minutes", timeToSleep.Minutes())
 	time.Sleep(timeToSleep)
 	for {
@@ -145,7 +145,7 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 			logger.Info("transaction confirmed")
 			return tx, dc.ValidateLockTime(tx.Locktime)
 		}
-		timeToSleep := time.Minute * time.Duration((tx.Confirmations-dc.ConfirmationCount)*2)
+		timeToSleep := time.Minute * time.Duration((dc.ConfirmationCount-tx.Confirmations)*2)
 		logger.Infof("transaction not yet confirmed, sleeping for %v minutes", timeToSleep.Minutes())
 		time.Sleep(timeToSleep)
 	}
