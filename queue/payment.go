@@ -80,7 +80,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 			return
 		}
 	default:
-		qm.l.Error("invalid blockchain for crypto payments", "error", err.Error())
+		qm.l.Error("invalid blockchain for crypto payments")
 		d.Ack(false)
 		return
 	}
