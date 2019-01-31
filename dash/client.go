@@ -52,19 +52,17 @@ func GenerateDashClient(cfg *config.TemporalConfig) (*DashClient, error) {
 }
 
 // ProcessPayment is used to process a dash based payment
-func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts, logger *zap.SugaredLogger) error {
+func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts, l *zap.SugaredLogger) error {
 	var (
 		toProcessTransactions []ch.ProcessedTxObject
 		processedTransactions = make(map[string]bool)
 		totalAmountSent       float64
 		paymentForwardID      = opts.PaymentForward.PaymentForwardID
 	)
-	l := logger.With("payment").With("dash")
-	killTime := time.Now().Add(time.Minute * 60)
+	killTime := time.Now().Add(time.Minute * 90)
 	if len(opts.PaymentForward.ProcessedTxs) == 0 {
-		l.Info("no transactions detected, sleeping for 2 minutes")
-		// no processed transactions yet, sleep for 2 minutes and then check again
-		time.Sleep(time.Minute * 2)
+		l.Info("no transactions detected, sleeping for 4 minutes")
+		time.Sleep(time.Minute * 4)
 	}
 	for {
 		if time.Now().UnixNano() > killTime.UnixNano() {
@@ -76,9 +74,9 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts, logger *zap.Sugar
 			return err
 		}
 		if len(paymentForward.ProcessedTxs) == 0 {
-			l.Info("no transactions detected, sleeping for 2 minutes")
-			// no processed transactions yet, sleep for 2 minutes
-			time.Sleep(time.Minute * 2)
+			l.Info("no transactions detected, sleeping for 4 minutes")
+			// no processed transactions yet, sleep for 4 minutes
+			time.Sleep(time.Minute * 4)
 			continue
 		}
 		l.Info("new transaction(s) detected, ensuring we haven't already processed them")
@@ -90,12 +88,12 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts, logger *zap.Sugar
 		}
 		if len(toProcessTransactions) == 0 {
 			l.Info("all transactions have already been processed, waiting for new ones")
-			time.Sleep(time.Minute * 2)
+			time.Sleep(time.Minute * 4)
 			continue
 		}
 		// process the actual transactions
 		for _, tx := range toProcessTransactions {
-			if _, err = dc.ProcessTransaction(tx.TransactionHash, killTime, logger); err != nil {
+			if _, err = dc.ProcessTransaction(tx.TransactionHash, killTime, l); err != nil {
 				return err
 			}
 			txValueFloat := ch.DuffsToDash(float64(int64(tx.ReceivedAmountDuffs)))
@@ -113,7 +111,7 @@ func (dc *DashClient) ProcessPayment(opts *ProcessPaymentOpts, logger *zap.Sugar
 		// clear to process transactions
 		toProcessTransactions = []ch.ProcessedTxObject{}
 		// sleep temporarily
-		time.Sleep(time.Minute * 2)
+		time.Sleep(time.Minute * 4)
 		continue
 	}
 }
@@ -129,10 +127,11 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 		logger.Info("transaction is confirmed, validating lock time and returning")
 		return tx, dc.ValidateLockTime(tx.Locktime)
 	}
-
-	logger.Info("transaction not yet confirmed, sleeping for 2 minutes")
-	// dash  block time is long, so we can sleep for a bit equal to block time
-	time.Sleep(time.Minute * 2)
+	// determine time to sleep in minutes
+	// we multiply by 2 since 1 confirmation means 1 block, for which block time is 2 minutes
+	timeToSleep := time.Minute * time.Duration((tx.Confirmations-dc.ConfirmationCount)*2)
+	logger.Infof("transaction not yet confirmed, sleeping for %v minutes", timeToSleep.Minutes())
+	time.Sleep(timeToSleep)
 	for {
 		if time.Now().UnixNano() > killTime.UnixNano() {
 			return nil, errors.New("timeout occured while waiting for transaction")
@@ -146,8 +145,9 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 			logger.Info("transaction confirmed")
 			return tx, dc.ValidateLockTime(tx.Locktime)
 		}
-		logger.Info("transaction not yet confirmed, sleeping for 2 minutes")
-		time.Sleep(time.Minute * 2)
+		timeToSleep := time.Minute * time.Duration((tx.Confirmations-dc.ConfirmationCount)*2)
+		logger.Infof("transaction not yet confirmed, sleeping for %v minutes", timeToSleep.Minutes())
+		time.Sleep(timeToSleep)
 	}
 }
 

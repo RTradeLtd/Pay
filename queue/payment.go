@@ -179,7 +179,7 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		d.Ack(false)
 		return
 	}
-	qm.l.Info("granted credits")
+	qm.l.Infof("granted %v credits credits", payment.USDValue)
 	d.Ack(false)
 	return
 }
