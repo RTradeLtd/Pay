@@ -27,7 +27,7 @@
 
 [[override]]
   name = "github.com/RTradeLtd/config"
-  branch = "signer/tls"
+  version = "~v2.0.0"
   
 [[override]]
   name = "github.com/RTradeLtd/database"

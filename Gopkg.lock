@@ -18,12 +18,12 @@
   version = "v2.0.1"
 
 [[projects]]
-  branch = "signer/tls"
-  digest = "1:e0ca7ad0f62bd1edf0e156908ed2df073851e121ea6399341fef4eb20413e441"
+  digest = "1:d914e7b89490aab7ff3dafd9e79f6b431328803f5e25b59428d62531fa6c2ec0"
   name = "github.com/RTradeLtd/config"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cc85dc26a4d1a4a3ed4c528a49c26d52430bd981"
+  revision = "c973c5b0c01ab295f86502599286dbee04a6f1d4"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "release/prod-prep"

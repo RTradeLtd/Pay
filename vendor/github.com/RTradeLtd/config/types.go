@@ -3,18 +3,18 @@ package config
 // TemporalConfig defines Temporal configuration fields
 type TemporalConfig struct {
 	API         `json:"api,omitempty"`
-	Database    `json:"database,omitempty"`
-	IPFS        `json:"ipfs,omitempty"`
-	IPFSCluster `json:"ipfs_cluster,omitempty"`
-	RabbitMQ    `json:"rabbitmq,omitempty"`
-	AWS         `json:"aws,omitempty"`
-	Sendgrid    `json:"sendgrid,omitempty"`
-	Ethereum    `json:"ethereum,omitempty"`
-	Wallets     `json:"wallets,omitempty"`
 	APIKeys     `json:"api_keys,omitempty"`
-	Endpoints   `json:"endpoints,omitempty"`
-	Nexus       `json:"nexus,omitempty"`
+	AWS         `json:"aws,omitempty"`
+	Database    `json:"database,omitempty"`
+	Services    `json:"services,omitempty"`
+	Ethereum    `json:"ethereum,omitempty"`
+	IPFSCluster `json:"ipfs_cluster,omitempty"`
+	IPFS        `json:"ipfs,omitempty"`
 	Pay         `json:"pay,omitempty"`
+	RabbitMQ    `json:"rabbitmq,omitempty"`
+	Sendgrid    `json:"sendgrid,omitempty"`
+	Stripe      `json:"stripe,omitempty"`
+	Wallets     `json:"wallets,omitempty"`
 	LogDir      string `json:"log_dir,omitempty"`
 }
 
@@ -24,13 +24,13 @@ type API struct {
 		Certificates struct {
 			CertPath string `json:"cert_path"`
 			KeyPath  string `json:"key_path"`
-		}
+		} `json:"certificates"`
 		ListenAddress string `json:"listen_address"`
 		// defines parameters for prometheus metric collector
 		Prometheus struct {
 			IP   string `json:"ip"`
 			Port string `json:"port"`
-		}
+		} `json:"prometheus"`
 		// define the maximum number of people allowed to connect to the API
 		Limit string `json:"limit"`
 	} `json:"connection"`
@@ -83,8 +83,9 @@ type IPFSCluster struct {
 type RabbitMQ struct {
 	URL       string `json:"url"`
 	TLSConfig struct {
-		CertFile string `json:"cert_file"`
-		KeyFile  string `json:"key_file"`
+		CertFile   string `json:"cert_file"`
+		KeyFile    string `json:"key_file"`
+		CACertFile string `json:"ca_cert_file"`
 	} `json:"tls_config"`
 }
 
@@ -141,19 +142,12 @@ type APIKeys struct {
 	ChainRider string `json:"chain_rider"`
 }
 
-// Endpoints are various endpoints we connect to
-type Endpoints struct {
+// Services are various endpoints we connect to
+type Services struct {
 	MoneroRPC string `json:"monero_rpc"`
-	Lens      struct {
-		URL string `json:"url"`
-		TLS struct {
-			CertPath string `json:"cert_path"`
-			KeyFile  string `json:"key_file"`
-		}
-		AuthKey string `json:"auth_key"`
-		LogFile string `json:"log_file"`
-	} `json:"lens"`
-	MongoDB struct {
+	Lens      `json:"lens"`
+	Nexus     `json:"nexus"`
+	MongoDB   struct {
 		URL              string `json:"url"`
 		DB               string `json:"db"`
 		UploadCollection string `json:"uploads"`
@@ -175,6 +169,16 @@ type Endpoints struct {
 	} `json:"krab"`
 }
 
+// Lens defines options for the Lens search engine
+type Lens struct {
+	URL string `json:"url"`
+	TLS struct {
+		CertPath string `json:"cert_path"`
+		KeyFile  string `json:"key_file"`
+	} `json:"tls"`
+	AuthKey string `json:"auth_key"`
+}
+
 // Nexus defines options for the Nexus, our private network
 // management tool for IPFS.
 type Nexus struct {
@@ -188,4 +192,10 @@ type Nexus struct {
 	Delegator struct {
 		Port string `json:"port"`
 	} `json:"delegator"`
+}
+
+// Stripe is used to configure our connection with stripe api
+type Stripe struct {
+	PublishableKey string `json:"publishable_key"`
+	SecretKey      string `json:"secret_key"`
 }
