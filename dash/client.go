@@ -12,7 +12,7 @@ import (
 const (
 	devConfirmationCount  = int(3)
 	prodConfirmationCount = int(6)
-	dev                   = true
+	dev                   = false
 )
 
 // DashClient is our connection to the dash blockchain via chainrider api

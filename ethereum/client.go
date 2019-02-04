@@ -19,7 +19,7 @@ import (
 const (
 	devConfirmationCount  = int(3)
 	prodConfirmationCount = int(30)
-	dev                   = true
+	dev                   = false
 )
 
 // Client is our connection to ethereum
