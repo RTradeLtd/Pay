@@ -152,7 +152,7 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 		lastBlockChecked = currentBlock
 		// set current confirmations to difference between current block and confirmed block
 		currentConfirmations = currentBlock - confirmedBlock
-		if currentConfirmations > confirmationsNeeded {
+		if currentConfirmations >= confirmationsNeeded {
 			break
 		}
 	}
