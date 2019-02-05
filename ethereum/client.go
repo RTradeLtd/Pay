@@ -181,6 +181,13 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 	if tx.To().String() != c.PaymentContractAddress {
 		return errors.New("destination address must be the payments contract address")
 	}
+	// if rcpt.ContractAddress is not empty, then this is a contract transaction,
+	// so the contract address should be equal to rtc token address
+	if rcpt.ContractAddress != "" {
+		if rcpt.ContractAddress != c.RTCAddress {
+			return errors.New("token transaction is not rtc")
+		}
+	}
 	fmt.Println("tx confirmed")
 	return nil
 }
