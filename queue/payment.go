@@ -60,9 +60,10 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		d.Ack(false)
 		return
 	}
+	logger := qm.l.With("user", pc.UserName).With("number", pc.PaymentNumber).With("currency", "ethereum")
 	payment, err := service.PM.FindPaymentByNumber(pc.UserName, pc.PaymentNumber)
 	if err != nil {
-		qm.l.Error("failed to find payment message", "error", err.Error())
+		logger.Errorw("failed to find payment message", "error", err.Error())
 		d.Ack(false)
 		return
 	}
@@ -75,7 +76,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		for count := 0; count < 3; count++ {
 			if err := service.Client.ProcessPaymentTx(payment.TxHash); err != nil {
 				if count < 3 {
-					qm.l.Warn("failed to find payment, waiting before attempting again", "error", err.Error())
+					logger.Warnw("failed to find payment, waiting before attempting again", "error", err.Error())
 					time.Sleep(time.Second * 15)
 					continue
 				}
@@ -86,35 +87,35 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		}
 		// make sure we were able to find the transaction
 		if !found {
-			qm.l.Error("failed to find payment transaction after 3 repeated attempts")
+			logger.Errorw("failed to find payment transaction after 3 repeated attempts")
 			d.Ack(false)
 			return
 		}
 	default:
-		qm.l.Error("invalid blockchain for crypto payments")
+		logger.Errorw("invalid blockchain for crypto payments")
 		d.Ack(false)
 		return
 	}
 	if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
-		qm.l.Error("failed to confirm payment in database", "error", err.Error())
+		logger.Errorw("failed to confirm payment in database", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	// grant credits to the user
 	if _, err = service.UM.AddCredits(pc.UserName, payment.USDValue); err != nil {
-		qm.l.Error("failed to add credits for user", "error", err.Error())
+		logger.Errorw("failed to add credits for user", "error", err.Error())
 		d.Ack(false)
 		return
 	}
-	qm.l.Info("successfully confirmed payment")
+	logger.Infow("successfully confirmed payment", "credits", payment.USDValue)
 	user, err := um.FindByUserName(payment.UserName)
 	if err != nil {
-		qm.l.Error("failed to find email for user", "error", err.Error())
+		logger.Errorw("failed to find email for user", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if !user.EmailEnabled {
-		qm.l.Warn("user has not activated their email and won't receive notifications")
+		logger.Warnw("user has not activated their email and won't receive notifications")
 		d.Ack(false)
 		return
 	}
@@ -126,7 +127,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		Emails:      []string{user.EmailAddress},
 	}
 	if err := qmEmail.PublishMessage(es); err != nil {
-		qm.l.Error("failed to send payment confirmation email")
+		logger.Warnw("failed to send payment confirmation email")
 	}
 	d.Ack(false)
 	return
@@ -177,15 +178,16 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		d.Ack(false)
 		return
 	}
+	logger := qm.l.With("user", msg.UserName).With("number", msg.PaymentNumber).With("currency", "dash")
 	paymentForward, err := service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
 	if err != nil {
-		qm.l.Error("failed to get payment forward by id", "error", err.Error())
+		logger.Errorw("failed to get payment forward by id", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	payment, err := service.PM.FindPaymentByNumber(msg.UserName, msg.PaymentNumber)
 	if err != nil {
-		qm.l.Error("failed to search for payment by number", "error", err.Error())
+		logger.Errorw("failed to search for payment by number", "error", err.Error())
 		d.Ack(false)
 		return
 	}
@@ -195,41 +197,41 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		PaymentForward: paymentForward,
 	}
 	if err = service.Dash.ProcessPayment(&opts, qm.l.With("user", msg.UserName)); err != nil {
-		qm.l.Error("failed to process dash payment", "error", err.Error())
+		logger.Errorw("failed to process dash payment", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	// during processing, the user may have sent additional payments so need to re-grab them
 	paymentForward, err = service.Dash.C.GetPaymentForwardByID(msg.PaymentForwardID)
 	if err != nil {
-		qm.l.Error("failed to get payment forward by id", "error", err.Error())
+		logger.Errorw("failed to get payment forward by id", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if len(paymentForward.ProcessedTxs) == 0 {
-		qm.l.Error("no processed transactions detected", "error", err.Error())
+		logger.Errorw("no processed transactions detected", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if _, err = service.PM.ConfirmPayment(payment.TxHash); err != nil {
-		qm.l.Error("failed to confirm payment", "error", err.Error())
+		logger.Errorw("failed to confirm payment", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if _, err = service.UM.AddCredits(msg.UserName, payment.USDValue); err != nil {
-		qm.l.Error("failed to add credits to user", "error", err.Error())
+		logger.Errorw("failed to add credits to user", "error", err.Error())
 		d.Ack(false)
 		return
 	}
-	qm.l.Infof("granted %v credits credits", payment.USDValue)
+	logger.Infow("successfully confirmed payment", "credits", payment.USDValue)
 	user, err := um.FindByUserName(payment.UserName)
 	if err != nil {
-		qm.l.Error("failed to find email for user", "error", err.Error())
+		logger.Errorw("failed to find email for user", "error", err.Error())
 		d.Ack(false)
 		return
 	}
 	if !user.EmailEnabled {
-		qm.l.Warn("user has not activated their email and won't receive notifications")
+		logger.Warnw("user has not activated their email and won't receive notifications")
 		d.Ack(false)
 		return
 	}
@@ -241,7 +243,7 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		Emails:      []string{user.EmailAddress},
 	}
 	if err := qmEmail.PublishMessage(es); err != nil {
-		qm.l.Error("failed to send payment confirmation email")
+		logger.Errorw("failed to send payment confirmation email", "error", err.Error())
 	}
 	d.Ack(false)
 	return
