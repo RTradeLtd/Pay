@@ -11,4 +11,4 @@ gRPC API.
 [![Build Status](https://travis-ci.com/RTradeLtd/Pay.svg?branch=master)](https://travis-ci.com/RTradeLtd/Pay)
 [![codecov](https://codecov.io/gh/RTradeLtd/Pay/branch/master/graph/badge.svg)](https://codecov.io/gh/RTradeLtd/Pay)
 [![Go Report Card](https://goreportcard.com/badge/github.com/RTradeLtd/Pay)](https://goreportcard.com/report/github.com/RTradeLtd/Pay)
-[![Latest Release](https://img.shields.io/github/release/RTradeLtd/Pay.svg?colorB=red)](https://github.com/RTradeLtd/Pay/releases)
+[![Latest Release](https://img.shields.io/github/release/RTradeLtd/Pay.svg)](https://github.com/RTradeLtd/Pay/releases)
