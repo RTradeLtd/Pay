@@ -123,7 +123,7 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 	if err != nil {
 		return nil, err
 	}
-	if tx.Confirmations > dc.ConfirmationCount {
+	if tx.Confirmations >= dc.ConfirmationCount {
 		logger.Info("transaction is confirmed, validating lock time and returning")
 		return tx, dc.ValidateLockTime(tx.Locktime)
 	}
@@ -141,7 +141,7 @@ func (dc *DashClient) ProcessTransaction(txHash string, killTime time.Time, logg
 		if err != nil {
 			return nil, err
 		}
-		if tx.Confirmations > dc.ConfirmationCount {
+		if tx.Confirmations >= dc.ConfirmationCount {
 			logger.Info("transaction confirmed")
 			return tx, dc.ValidateLockTime(tx.Locktime)
 		}
