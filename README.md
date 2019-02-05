@@ -1,11 +1,10 @@
 # Pay
 
-> 💸 Temporal's blockchain based payment processing service
+> 💸 Temporal's blockchain-based payment processing service
 
-Pay is a service used to facilitate payment for credits on Temporal. It is a
-seperate package to avoid licensing headaches between go-ethereum and Temporal,
-and operates as a separate service that connects to the Temporal via a
-gRPC API.
+Pay is a service used to facilitate payment for credits on
+[Temporal](https://github.com/RTradeLtd/Temporal). It operates as a separate
+service that connects to Temporal via a gRPC API.
 
 [![GoDoc](https://godoc.org/github.com/RTradeLtd/Pay?status.svg)](https://godoc.org/github.com/RTradeLtd/Pay)
 [![Build Status](https://travis-ci.com/RTradeLtd/Pay.svg?branch=master)](https://travis-ci.com/RTradeLtd/Pay)
