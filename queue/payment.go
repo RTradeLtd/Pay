@@ -4,11 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/RTradeLtd/Pay/dash"
+	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/service"
+	"github.com/RTradeLtd/database/models"
 	"github.com/streadway/amqp"
 )
 
@@ -18,12 +21,21 @@ func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 	if err != nil {
 		return err
 	}
+	logger, err := log.NewLogger(qm.cfg.LogDir+"pay_eth_email_publisher.log", false)
+	if err != nil {
+		return err
+	}
+	qmEmail, err := New(EmailSendQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	if err != nil {
+		return err
+	}
+	um := models.NewUserManager(qm.db)
 	qm.l.Info("processing payment confirmations")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processETHPayment(d, wg, service)
+			go qm.processETHPayment(d, wg, service, qmEmail, um)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -39,7 +51,7 @@ func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 	}
 }
 
-func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService) {
+func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new ethereum based payment message received")
 	pc := EthPaymentConfirmation{}
@@ -95,6 +107,27 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		return
 	}
 	qm.l.Info("successfully confirmed payment")
+	user, err := um.FindByUserName(payment.UserName)
+	if err != nil {
+		qm.l.Error("failed to find email for user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if !user.EmailEnabled {
+		qm.l.Warn("user has not activated their email and won't receive notifications")
+		d.Ack(false)
+		return
+	}
+	es := EmailSend{
+		Subject:     "Ethereum Payment Confirmed",
+		Content:     fmt.Sprintf("Your ethereum payment for %v credits has been confirmed", payment.USDValue),
+		ContentType: "text/html",
+		UserNames:   []string{payment.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	if err := qmEmail.PublishMessage(es); err != nil {
+		qm.l.Error("failed to send payment confirmation email")
+	}
 	d.Ack(false)
 	return
 }
@@ -105,12 +138,21 @@ func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, m
 	if err != nil {
 		return err
 	}
+	logger, err := log.NewLogger(qm.cfg.LogDir+"pay_eth_email_publisher.log", false)
+	if err != nil {
+		return err
+	}
+	qmEmail, err := New(EmailSendQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	if err != nil {
+		return err
+	}
+	um := models.NewUserManager(qm.db)
 	qm.l.Info("processing dash payment confirmations")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processDashPaymentConfirmation(d, wg, service)
+			go qm.processDashPaymentConfirmation(d, wg, service, qmEmail, um)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -126,7 +168,7 @@ func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, m
 	}
 }
 
-func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService) {
+func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new dash payment message received")
 	msg := DashPaymentConfirmation{}
@@ -180,6 +222,27 @@ func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.Wait
 		return
 	}
 	qm.l.Infof("granted %v credits credits", payment.USDValue)
+	user, err := um.FindByUserName(payment.UserName)
+	if err != nil {
+		qm.l.Error("failed to find email for user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if !user.EmailEnabled {
+		qm.l.Warn("user has not activated their email and won't receive notifications")
+		d.Ack(false)
+		return
+	}
+	es := EmailSend{
+		Subject:     "DASH Payment Confirmed",
+		Content:     fmt.Sprintf("Your dash payment for %v credits has been confirmed", payment.USDValue),
+		ContentType: "text/html",
+		UserNames:   []string{payment.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	if err := qmEmail.PublishMessage(es); err != nil {
+		qm.l.Error("failed to send payment confirmation email")
+	}
 	d.Ack(false)
 	return
 }
