@@ -2,8 +2,11 @@ package queue
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"sync"
 
 	"github.com/RTradeLtd/gorm"
@@ -13,9 +16,22 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Manager is a helper struct to interact with rabbitmq
+type Manager struct {
+	connection   *amqp.Connection
+	channel      *amqp.Channel
+	queue        *amqp.Queue
+	l            *zap.SugaredLogger
+	db           *gorm.DB
+	cfg          *config.TemporalConfig
+	ErrCh        chan *amqp.Error
+	QueueName    Queue
+	ExchangeName string
+}
+
 // New is used to instantiate a new connection to rabbitmq as a publisher or consumer
-func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Manager, error) {
-	conn, err := setupConnection(url)
+func New(queue Queue, cfg *config.TemporalConfig, logger *zap.SugaredLogger, publish bool) (*Manager, error) {
+	conn, err := setupConnection(cfg.RabbitMQ.URL, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +47,6 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	if err := qm.openChannel(); err != nil {
 		return nil, err
 	}
-
 	// if we aren't publishing, and are consuming
 	// setup a queue to receive messages on
 	if !publish {
@@ -44,8 +59,31 @@ func New(queue Queue, url string, publish bool, logger *zap.SugaredLogger) (*Man
 	return &qm, nil
 }
 
-func setupConnection(connectionURL string) (*amqp.Connection, error) {
-	conn, err := amqp.Dial(connectionURL)
+func setupConnection(connectionURL string, cfg *config.TemporalConfig) (*amqp.Connection, error) {
+	var (
+		conn *amqp.Connection
+		err  error
+	)
+	if cfg.RabbitMQ.TLSConfig.CACertFile == "" {
+		conn, err = amqp.Dial(connectionURL)
+	} else {
+		// see https://godoc.org/github.com/streadway/amqp#DialTLS for more information
+		tlsConfig := new(tls.Config)
+		tlsConfig.RootCAs = x509.NewCertPool()
+		ca, err := ioutil.ReadFile(cfg.RabbitMQ.TLSConfig.CACertFile)
+		if err != nil {
+			return nil, err
+		}
+		if ok := tlsConfig.RootCAs.AppendCertsFromPEM(ca); !ok {
+			return nil, errors.New("failed to successfully append cert file")
+		}
+		cert, err := tls.LoadX509KeyPair(cfg.RabbitMQ.TLSConfig.CertFile, cfg.RabbitMQ.TLSConfig.KeyFile)
+		if err != nil {
+			return nil, err
+		}
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
+		conn, err = amqp.DialTLS(connectionURL, tlsConfig)
+	}
 	if err != nil {
 		return nil, err
 	}

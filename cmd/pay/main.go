@@ -125,7 +125,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.EthPaymentConfirmationQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.EthPaymentConfirmationQueue, &cfg, logger, *devMode)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)
@@ -169,7 +169,7 @@ var commands = map[string]cmd.Cmd{
 								cancel()
 							}()
 							for {
-								qm, err := queue.New(queue.DashPaymentConfirmationQueue, cfg.RabbitMQ.URL, false, logger)
+								qm, err := queue.New(queue.DashPaymentConfirmationQueue, &cfg, logger, true)
 								if err != nil {
 									fmt.Println("failed to start queue", err)
 									os.Exit(1)

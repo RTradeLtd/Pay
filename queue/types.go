@@ -1,12 +1,5 @@
 package queue
 
-import (
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/gorm"
-	"github.com/streadway/amqp"
-	"go.uber.org/zap"
-)
-
 // Queue is a typed string used to declare the various queue names
 type Queue string
 
@@ -25,19 +18,6 @@ var (
 	// It is used to signal reconnect of queue consumers and publishers
 	ErrReconnect = "protocol connection error, reconnect"
 )
-
-// Manager is a helper struct to interact with rabbitmq
-type Manager struct {
-	connection   *amqp.Connection
-	channel      *amqp.Channel
-	queue        *amqp.Queue
-	l            *zap.SugaredLogger
-	db           *gorm.DB
-	cfg          *config.TemporalConfig
-	ErrCh        chan *amqp.Error
-	QueueName    Queue
-	ExchangeName string
-}
 
 // EthPaymentConfirmation is a message used to confirm an ethereum based payment
 type EthPaymentConfirmation struct {
