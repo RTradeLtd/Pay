@@ -28,7 +28,7 @@ func TestSigner(t *testing.T) {
 	cfg.Ethereum.Account.KeyFile = "key.txt"
 	cfg.Ethereum.Account.KeyPass = pass
 
-	signer, err := GeneratePaymentSigner(cfg)
+	signer, err := NewPaymentSigner(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
