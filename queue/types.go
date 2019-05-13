@@ -32,6 +32,15 @@ type DashPaymentConfirmation struct {
 	PaymentNumber    int64  `json:"payment_number"`
 }
 
+// BchPaymentConfirmation is used to confirm a bitcoin cash based payment
+type BchPaymentConfirmation struct {
+	UserName         string `json:"user_name"`
+	SenderAddress    string `json:"sender_address"`
+	RecipientAddress string `json:"recipient_address"`
+	TransactionHash  string `json:"transaction_hash"`
+	PaymentNumber    int64  `json:"payment_number"`
+}
+
 // EmailSend is a helper struct used to contained formatted content ot send as an email
 type EmailSend struct {
 	Subject     string   `json:"subject"`

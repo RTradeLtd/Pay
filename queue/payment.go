@@ -169,6 +169,54 @@ func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, m
 	}
 }
 
+// ProcessBCHPayment is used to handle processing of BCH based payments
+func (qm *Manager) ProcessBCHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{BitcoinCashEnabled: true, BCHURL: "temporary"}, "rpc")
+	if err != nil {
+		return err
+	}
+	logger, err := log.NewLogger(qm.cfg.LogDir+"bch_email_publisher.log", false)
+	if err != nil {
+		return err
+	}
+	qmEmail, err := New(EmailSendQueue, qm.cfg, logger, true)
+	if err != nil {
+		return err
+	}
+	um := models.NewUserManager(qm.db)
+	qm.l.Info("processing bch payment confirmations")
+	for {
+		select {
+		case d := <-msgs:
+			wg.Add(1)
+			fmt.Println(d)
+			go qm.processBchPaymentConfirmation(d, wg, service, qmEmail, um)
+		case <-ctx.Done():
+			qm.Close()
+			wg.Done()
+			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
+		}
+	}
+}
+
+func (qm *Manager) processBchPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
+	defer wg.Done()
+	qm.l.Info("new bch payment message received")
+	msg := BchPaymentConfirmation{}
+	if err := json.Unmarshal(d.Body, &msg); err != nil {
+		qm.l.Error("failed to unmarshal message", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+}
+
 func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
 	defer wg.Done()
 	qm.l.Info("new dash payment message received")
