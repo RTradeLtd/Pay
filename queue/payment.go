@@ -25,7 +25,7 @@ func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 	if err != nil {
 		return err
 	}
-	qmEmail, err := New(EmailSendQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	qmEmail, err := New(EmailSendQueue, qm.cfg, logger, true)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, m
 	if err != nil {
 		return err
 	}
-	qmEmail, err := New(EmailSendQueue, qm.cfg.RabbitMQ.URL, true, logger)
+	qmEmail, err := New(EmailSendQueue, qm.cfg, logger, true)
 	if err != nil {
 		return err
 	}
