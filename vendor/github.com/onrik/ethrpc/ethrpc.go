@@ -75,6 +75,11 @@ func (rpc *EthRPC) call(method string, target interface{}, params ...interface{}
 	return json.Unmarshal(result, target)
 }
 
+// URL returns client url
+func (rpc *EthRPC) URL() string {
+	return rpc.url
+}
+
 // Call returns raw response of method call
 func (rpc *EthRPC) Call(method string, params ...interface{}) (json.RawMessage, error) {
 	request := ethRequest{
@@ -370,6 +375,14 @@ func (rpc *EthRPC) EthEstimateGas(transaction T) (int, error) {
 }
 
 func (rpc *EthRPC) getBlock(method string, withTransactions bool, params ...interface{}) (*Block, error) {
+	result, err := rpc.RawCall(method, params...)
+	if err != nil {
+		return nil, err
+	}
+	if bytes.Equal(result, []byte("null")) {
+		return nil, nil
+	}
+
 	var response proxyBlock
 	if withTransactions {
 		response = new(proxyBlockWithTransactions)
@@ -377,12 +390,12 @@ func (rpc *EthRPC) getBlock(method string, withTransactions bool, params ...inte
 		response = new(proxyBlockWithoutTransactions)
 	}
 
-	err := rpc.call(method, response, params...)
+	err = json.Unmarshal(result, response)
 	if err != nil {
 		return nil, err
 	}
-	block := response.toBlock()
 
+	block := response.toBlock()
 	return &block, nil
 }
 

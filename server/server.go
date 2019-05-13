@@ -42,7 +42,7 @@ func RunServer(ctx context.Context, wg *sync.WaitGroup, cfg config.TemporalConfi
 		return err
 	}
 	// generate our signer
-	s, err := signer.GeneratePaymentSigner(&cfg)
+	s, err := signer.NewPaymentSigner(&cfg)
 	if err != nil {
 		return err
 	}
