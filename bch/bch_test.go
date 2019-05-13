@@ -31,6 +31,22 @@ func Test_GetTx(t *testing.T) {
 	}
 }
 
+func Test_GetConfirmationCount(t *testing.T) {
+	c, fbc := newMockClient()
+	fbc.GetTransactionReturnsOnCall(0, &pb.GetTransactionResponse{
+		Transaction: &pb.Transaction{
+			Confirmations: 6,
+		},
+	}, nil)
+	tx, err := c.GetTx(context.Background(), "hello")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count := c.GetConfirmationCount(tx); count != 6 {
+		t.Fatal("bad count returnedx")
+	}
+}
+
 func newMockClient() (*Client, *mocks.FakeBchrpcClient) {
 	fbc := &mocks.FakeBchrpcClient{}
 	c := &Client{}
