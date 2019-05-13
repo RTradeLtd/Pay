@@ -47,6 +47,14 @@ func Test_GetConfirmationCount(t *testing.T) {
 	}
 }
 
+func Test_GetCurrentBlockHeight(t *testing.T) {
+	c, fbc := newMockClient()
+	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{}, nil)
+	if _, err := c.GetCurrentBlockHeight(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func newMockClient() (*Client, *mocks.FakeBchrpcClient) {
 	fbc := &mocks.FakeBchrpcClient{}
 	c := &Client{}
