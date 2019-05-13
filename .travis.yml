@@ -17,7 +17,8 @@ before_script:
 script:
   - go fmt ./...
   - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor  - go test -race -short -coverprofile=coverage.txt ./...
-
+  - go test -short -race -coverprofile=coverage.txt ./...
+  
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
