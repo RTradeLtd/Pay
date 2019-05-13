@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/RTradeLtd/config"
@@ -16,7 +17,7 @@ func TestNewPaymetService(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := NewPaymentService(cfg, &Opts{true, true}, "infura"); err != nil {
+	if _, err := NewPaymentService(context.Background(), cfg, &Opts{true, true, true, "hello", true}, "infura"); err != nil {
 		t.Fatal(err)
 	}
 }

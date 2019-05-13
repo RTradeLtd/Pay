@@ -1,6 +1,10 @@
 package service
 
 import (
+	"context"
+	"errors"
+
+	"github.com/RTradeLtd/Pay/bch"
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/ethereum"
 	"github.com/RTradeLtd/config"
@@ -12,18 +16,22 @@ import (
 type PaymentService struct {
 	Client *ethereum.Client
 	Dash   *dash.DashClient
+	BCH    *bch.Client
 	PM     *models.PaymentManager
 	UM     *models.UserManager
 }
 
 // Opts is used to configure our payment service
 type Opts struct {
-	DashEnabled     bool
-	EthereumEnabled bool
+	DashEnabled        bool
+	EthereumEnabled    bool
+	BitcoinCashEnabled bool
+	BCHURL             string
+	DevMode            bool
 }
 
 // NewPaymentService is used to generate our payment service
-func NewPaymentService(cfg *config.TemporalConfig, opts *Opts, connectionType string) (*PaymentService, error) {
+func NewPaymentService(ctx context.Context, cfg *config.TemporalConfig, opts *Opts, connectionType string) (*PaymentService, error) {
 	dbm, err := database.New(cfg, database.Options{LogMode: true, SSLModeDisable: false})
 	if err != nil {
 		return nil, err
@@ -44,6 +52,17 @@ func NewPaymentService(cfg *config.TemporalConfig, opts *Opts, connectionType st
 			return nil, err
 		}
 		ps.Dash = dashClient
+	}
+	if opts.BitcoinCashEnabled {
+		// TODO: move this to config
+		if opts.BCHURL == "" {
+			return nil, errors.New("bch url not specified")
+		}
+		bchClient, err := bch.NewClient(ctx, opts.BCHURL, opts.DevMode)
+		if err != nil {
+			return nil, err
+		}
+		ps.BCH = bchClient
 	}
 	return ps, nil
 }
