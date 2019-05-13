@@ -17,7 +17,7 @@ import (
 
 // ProcessETHPayment is used to process ethereum and rtc based payments
 func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.NewPaymentService(qm.cfg, &service.Opts{EthereumEnabled: true, DashEnabled: false}, "rpc")
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{EthereumEnabled: true}, "rpc")
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 
 // ProcessDASHPayment is used to process dash based payments
 func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.NewPaymentService(qm.cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true}, "rpc")
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{DashEnabled: true}, "rpc")
 	if err != nil {
 		return err
 	}
