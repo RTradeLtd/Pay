@@ -3,6 +3,7 @@ package bch
 import (
 	"context"
 	"errors"
+	"time"
 
 	pb "github.com/gcash/bchd/bchrpc/pb"
 	"google.golang.org/grpc"
@@ -34,8 +35,8 @@ func NewClient(ctx context.Context, url string, dev bool) (*Client, error) {
 	return &Client{pb.NewBchrpcClient(gConn), confirmationCount}, nil
 }
 
-// GetTX is used to retrieve a transaction
-func (c *Client) GetTX(ctx context.Context, hash string) (*pb.GetTransactionResponse, error) {
+// GetTx is used to retrieve a transaction
+func (c *Client) GetTx(ctx context.Context, hash string) (*pb.GetTransactionResponse, error) {
 	return c.GetTransaction(ctx, &pb.GetTransactionRequest{Hash: []byte(hash)})
 }
 
@@ -66,4 +67,27 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 		return errors.New("tx is not confirmed")
 	}
 	return errors.New("tx is not confirmed")
+}
+
+// ProcessPaymentTx is used to process a payment transaction
+func (c *Client) ProcessPaymentTx(ctx context.Context, hash string) error {
+	tx, err := c.GetTx(ctx, hash)
+	if err != nil {
+		return err
+	}
+	if err := c.IsConfirmed(ctx, tx); err == nil {
+		return nil
+	}
+	// bch has 10 min block time so sleep for 10 min
+	time.Sleep(time.Minute * 10)
+	for {
+		tx, err = c.GetTx(ctx, hash)
+		if err != nil {
+			return err
+		}
+		if err := c.IsConfirmed(ctx, tx); err == nil {
+			return nil
+		}
+		time.Sleep(time.Minute * 10)
+	}
 }
