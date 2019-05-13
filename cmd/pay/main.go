@@ -82,13 +82,11 @@ func logPath(base, file string) (logPath string) {
 }
 
 func newDB(cfg config.TemporalConfig, noSSL bool) (*gorm.DB, error) {
-	return database.OpenDBConnection(database.DBOptions{
-		User:           cfg.Database.Username,
-		Password:       cfg.Database.Password,
-		Address:        cfg.Database.URL,
-		Port:           cfg.Database.Port,
-		SSLModeDisable: noSSL,
-	})
+	dbm, err := database.New(&cfg, database.Options{LogMode: true, SSLModeDisable: noSSL})
+	if err != nil {
+		return nil, err
+	}
+	return dbm.DB, nil
 }
 
 var commands = map[string]cmd.Cmd{
