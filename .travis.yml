@@ -1,13 +1,12 @@
 language: go
 go:
-  - "1.11"
+  - "1.12"
 services:
   - docker
 
+env: GO111MODULE=on
+
 install:
-  - go get -u golang.org/x/lint/golint
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - dep ensure
   - make vendor
 
 before_script:
@@ -17,8 +16,7 @@ before_script:
 
 script:
   - go fmt ./...
-  - golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor
-  - go test -race -short -coverprofile=coverage.txt ./...
+  - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor  - go test -race -short -coverprofile=coverage.txt ./...
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

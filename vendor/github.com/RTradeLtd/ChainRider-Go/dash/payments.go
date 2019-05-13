@@ -12,15 +12,24 @@ import (
 type PaymentForwardOpts struct {
 	// DestinationAddress is the address to which dash will be forwarded to
 	DestinationAddress string `json:"destination_address"`
+	CallbackURL        string `json:"callback_url,omitempty"`
 }
 
 // CreatePaymentForward is used to create a payment forward
 func (c *Client) CreatePaymentForward(opts *PaymentForwardOpts) (*CreatePaymentForwardResponse, error) {
 	url := fmt.Sprintf("%s/paymentforward", c.URL)
-	payloadString := fmt.Sprintf(
-		"{\n  \"destination_address\": \"%s\",\n  \"token\": \"%s\"\n}",
-		opts.DestinationAddress, c.Token,
-	)
+	var payloadString string
+	if opts.CallbackURL == "" {
+		payloadString = fmt.Sprintf(
+			"{\n  \"destination_address\": \"%s\",\n  \"token\": \"%s\"\n}",
+			opts.DestinationAddress, c.Token,
+		)
+	} else {
+		payloadString = fmt.Sprintf(
+			"{\n  \"destination_address\": \"%s\",\n  \"callback_url\": \"%s\",\n  \"token\": \"%s\"\n}",
+			opts.DestinationAddress, opts.CallbackURL, c.Token,
+		)
+	}
 	req, err := http.NewRequest("POST", url, strings.NewReader(payloadString))
 	if err != nil {
 		return nil, err

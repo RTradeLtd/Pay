@@ -31,6 +31,9 @@ type API struct {
 			IP   string `json:"ip"`
 			Port string `json:"port"`
 		} `json:"prometheus"`
+		CORS struct {
+			AllowedOrigins []string `json:"allowed_origins"`
+		} `json:"cors"`
 		// define the maximum number of people allowed to connect to the API
 		Limit string `json:"limit"`
 	} `json:"connection"`
@@ -157,17 +160,25 @@ type Services struct {
 		User string `json:"user"`
 		Pass string `json:"pass"`
 	} `json:"raven"`
-	Krab struct {
-		URL string `json:"url"`
-		TLS struct {
-			CertPath string `json:"cert_path"`
-			KeyFile  string `json:"key_file"`
-		}
-		AuthKey          string `json:"auth_key"`
-		LogFile          string `json:"log_file"`
-		KeystorePassword string `json:"keystore_password"`
-	} `json:"krab"`
+	Krab         `json:"krab"`
+	KrabFallback Krab `json:"krab_fallback"`
 }
+
+// Krab is used to for key management
+type Krab struct {
+	URL string `json:"url"`
+	TLS struct {
+		CertPath string `json:"cert_path"`
+		KeyFile  string `json:"key_file"`
+	}
+	AuthKey          string `json:"auth_key"`
+	LogFile          string `json:"log_file"`
+	KeystorePassword string `json:"keystore_password"`
+}
+
+// KrabFallback is a fallback configuration for
+// connecting to a secondary krab server
+type KrabFallback Krab
 
 // Lens defines options for the Lens search engine
 type Lens struct {
@@ -177,6 +188,15 @@ type Lens struct {
 		KeyFile  string `json:"key_file"`
 	} `json:"tls"`
 	AuthKey string `json:"auth_key"`
+	Options struct {
+		Engine struct {
+			StorePath string `json:"store_path"`
+			Queue     struct {
+				Rate  int `json:"rate"`
+				Batch int `json:"batch"`
+			} `json:"queue"`
+		} `json:"engine"`
+	} `json:"options"`
 }
 
 // Nexus defines options for the Nexus, our private network
