@@ -24,7 +24,7 @@ type Client struct {
 // NewClient is used to instantiate our new BCH gRPC client
 func NewClient(ctx context.Context, url string, devMode bool) (*Client, error) {
 	var opts []grpc.DialOption
-	if dev {
+	if devMode {
 		opts = append(opts, grpc.WithInsecure())
 	}
 	gConn, err := grpc.DialContext(ctx, url, opts...)
