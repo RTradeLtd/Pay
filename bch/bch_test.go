@@ -2,6 +2,7 @@ package bch
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/RTradeLtd/Pay/mocks"
@@ -23,6 +24,10 @@ func Test_GetTx(t *testing.T) {
 	fbc.GetTransactionReturnsOnCall(0, &pb.GetTransactionResponse{}, nil)
 	if _, err := c.GetTx(context.Background(), "123"); err != nil {
 		t.Fatal(err)
+	}
+	fbc.GetTransactionReturnsOnCall(1, &pb.GetTransactionResponse{}, errors.New("hello"))
+	if _, err := c.GetTx(context.Background(), "123"); err == nil {
+		t.Fatal("error expected")
 	}
 }
 
