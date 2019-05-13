@@ -16,3 +16,13 @@ vendor:
 	@echo "=================== generating dependencies ==================="
 	GO111MODULE=on go mod vendor
 	@echo "===================          done           ==================="
+
+
+# Rebuild generate code
+COUNTERFEITER=go run github.com/maxbrunsfeld/counterfeiter/v6
+.PHONY: gen
+gen:
+	@echo "===================    regenerating code    ==================="
+	$(COUNTERFEITER) -o ./mocks/bch.mock.go \
+		github.com/gcash/bchd/bchrpc/pb.BchrpcClient
+	@echo "===================          done           ==================="
