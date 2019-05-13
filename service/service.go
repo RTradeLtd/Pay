@@ -22,8 +22,8 @@ type Opts struct {
 	EthereumEnabled bool
 }
 
-// GeneratePaymentService is used to generate our payment service
-func GeneratePaymentService(cfg *config.TemporalConfig, opts *Opts, connectionType string) (*PaymentService, error) {
+// NewPaymentService is used to generate our payment service
+func NewPaymentService(cfg *config.TemporalConfig, opts *Opts, connectionType string) (*PaymentService, error) {
 	dbm, err := database.New(cfg, database.Options{LogMode: true, SSLModeDisable: false})
 	if err != nil {
 		return nil, err
