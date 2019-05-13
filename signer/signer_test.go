@@ -1,10 +1,12 @@
 package signer
 
 import (
+	"io/ioutil"
 	"math/big"
+	"os"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/RTradeLtd/config"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -15,13 +17,23 @@ var (
 )
 
 func TestSigner(t *testing.T) {
-	pk, err := keystore.DecryptKey([]byte(key), pass)
+	defer os.Remove("key.txt")
+	if err := ioutil.WriteFile("key.txt", []byte(key), os.FileMode(0644)); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ps := &PaymentSigner{Key: pk.PrivateKey}
+	cfg.Ethereum.Account.KeyFile = "key.txt"
+	cfg.Ethereum.Account.KeyPass = pass
+
+	signer, err := GeneratePaymentSigner(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
 	addr := common.HexToAddress("")
-	if _, err := ps.GenerateSignedPaymentMessagePrefixed(
+	if _, err := signer.GenerateSignedPaymentMessagePrefixed(
 		addr, 0, big.NewInt(1), big.NewInt(1),
 	); err != nil {
 		t.Fatal(err)
