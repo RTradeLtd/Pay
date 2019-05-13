@@ -183,14 +183,13 @@ func (qm *Manager) ProcessBCHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 	if err != nil {
 		return err
 	}
-	um := models.NewUserManager(qm.db)
 	qm.l.Info("processing bch payment confirmations")
 	for {
 		select {
 		case d := <-msgs:
 			wg.Add(1)
 			fmt.Println(d)
-			go qm.processBchPaymentConfirmation(d, wg, service, qmEmail, um)
+			go qm.processBchPaymentConfirmation(ctx, d, wg, service, qmEmail)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -206,7 +205,7 @@ func (qm *Manager) ProcessBCHPayment(ctx context.Context, wg *sync.WaitGroup, ms
 	}
 }
 
-func (qm *Manager) processBchPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
+func (qm *Manager) processBchPaymentConfirmation(ctx context.Context, d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager) {
 	defer wg.Done()
 	qm.l.Info("new bch payment message received")
 	msg := BchPaymentConfirmation{}
@@ -215,6 +214,51 @@ func (qm *Manager) processBchPaymentConfirmation(d amqp.Delivery, wg *sync.WaitG
 		d.Ack(false)
 		return
 	}
+	logger := qm.l.With("user", msg.UserName).With("number", msg.PaymentNumber).With("currency", "bch")
+	payment, err := service.PM.FindPaymentByNumber(msg.UserName, msg.PaymentNumber)
+	if err != nil {
+		logger.Errorw("failed to find payment from database", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if err := service.BCH.ProcessPaymentTx(ctx, payment.TxHash); err != nil {
+		logger.Errorw("failed to process payment", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err := service.PM.ConfirmPayment(payment.TxHash); err != nil {
+		logger.Errorw("failed to confirm payment", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err := service.UM.AddCredits(msg.UserName, payment.USDValue); err != nil {
+		logger.Errorw("failed to add credits to user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	user, err := service.UM.FindByUserName(msg.UserName)
+	if err != nil {
+		logger.Errorw("failed to find email for user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if !user.EmailEnabled {
+		logger.Warnw("user has not activated their email and won't receive notifications")
+		d.Ack(false)
+		return
+	}
+	es := EmailSend{
+		Subject:     "BCH Payment Confirmed",
+		Content:     fmt.Sprintf("Your bch payment for %v credits has been confirmed", payment.USDValue),
+		ContentType: "text/html",
+		UserNames:   []string{payment.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	if err := qmEmail.PublishMessage(es); err != nil {
+		logger.Errorw("failed to send payment confirmation email", "error", err.Error())
+	}
+	d.Ack(false)
+	return
 }
 
 func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {
