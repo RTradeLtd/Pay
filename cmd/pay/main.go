@@ -15,9 +15,9 @@ import (
 	"github.com/RTradeLtd/Pay/server"
 	"github.com/RTradeLtd/gorm"
 
-	"github.com/RTradeLtd/cmd"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/cmd/v2"
+	"github.com/RTradeLtd/config/v2"
+	"github.com/RTradeLtd/database/v2"
 	pbSigner "github.com/RTradeLtd/grpc/pay"
 )
 

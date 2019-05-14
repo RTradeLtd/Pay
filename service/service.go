@@ -7,9 +7,9 @@ import (
 	"github.com/RTradeLtd/Pay/bch"
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/ethereum"
-	"github.com/RTradeLtd/config"
-	"github.com/RTradeLtd/database"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2"
 )
 
 // PaymentService is our service which handles payment management
@@ -58,7 +58,7 @@ func NewPaymentService(ctx context.Context, cfg *config.TemporalConfig, opts *Op
 		if opts.BCHURL == "" {
 			return nil, errors.New("bch url not specified")
 		}
-		bchClient, err := bch.NewClient(ctx, opts.BCHURL, opts.DevMode)
+		bchClient, err := bch.NewClient(ctx, cfg, opts.DevMode)
 		if err != nil {
 			return nil, err
 		}

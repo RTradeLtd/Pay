@@ -6,19 +6,24 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Pay/mocks"
+	"github.com/RTradeLtd/config/v2"
 	pb "github.com/gcash/bchd/bchrpc/pb"
 )
 
 var (
 	url       = "127.0.0.1:5001"
 	remoteURL = "192.168.1.225:8335"
+	cfgPath   = "../test/config.json"
 )
 
 func Test_Integration(t *testing.T) {
 	t.Skip("integration")
-	client, err := NewClient(context.Background(), Opts{
-		CertFile: "./bch.rpc.cert",
-		URL:      remoteURL})
+	cfg, err := config.LoadConfig(cfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Services.BchGRPC.URL = remoteURL
+	client, err := NewClient(context.Background(), cfg, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,15 +37,21 @@ func Test_Integration(t *testing.T) {
 }
 
 func Test_NewClient_Dev(t *testing.T) {
-	if _, err := NewClient(context.Background(), Opts{URL: url, Dev: true}); err != nil {
+	cfg, err := config.LoadConfig(cfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := NewClient(context.Background(), cfg, true); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func Test_NewClient_Prod(t *testing.T) {
-	if _, err := NewClient(context.Background(), Opts{
-		CertFile: "./bch.rpc.cert",
-		URL:      url}); err != nil {
+	cfg, err := config.LoadConfig(cfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := NewClient(context.Background(), cfg, false); err != nil {
 		t.Fatal(err)
 	}
 }

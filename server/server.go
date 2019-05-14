@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/RTradeLtd/Pay/signer"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	pb "github.com/RTradeLtd/grpc/pay"
 	"github.com/RTradeLtd/grpc/pay/request"
 	"github.com/RTradeLtd/grpc/pay/response"

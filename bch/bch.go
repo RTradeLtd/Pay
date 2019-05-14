@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/RTradeLtd/config/v2"
 	pb "github.com/gcash/bchd/bchrpc/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -31,28 +32,28 @@ type Opts struct {
 }
 
 // NewClient is used to instantiate our new BCH gRPC client
-func NewClient(ctx context.Context, opts Opts) (*Client, error) {
+func NewClient(ctx context.Context, cfg *config.TemporalConfig, devMode bool) (*Client, error) {
 	var dialOpts []grpc.DialOption
-	if opts.Dev {
+	if devMode {
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	} else {
-		creds, err := credentials.NewClientTLSFromFile(opts.CertFile, "192.168.1.225")
+		creds, err := credentials.NewClientTLSFromFile(cfg.Services.BchGRPC.CertFile, "")
 		if err != nil {
 			return nil, err
 		}
 		dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
 	}
-	gConn, err := grpc.DialContext(ctx, opts.URL, dialOpts...)
+	gConn, err := grpc.DialContext(ctx, cfg.Services.BchGRPC.URL, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
 	var confirmationCount int
-	if opts.Dev {
+	if devMode {
 		confirmationCount = devConfirmationCount
 	} else {
 		confirmationCount = prodConfirmationCount
 	}
-	dev = opts.Dev
+	dev = devMode
 	return &Client{pb.NewBchrpcClient(gConn), confirmationCount}, nil
 }
 
