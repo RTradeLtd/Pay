@@ -53,11 +53,11 @@ func (c *Client) GetConfirmationCount(tx *pb.GetTransactionResponse) int32 {
 
 // GetCurrentBlockHeight is used to retrieve the current height, aka block number
 func (c *Client) GetCurrentBlockHeight(ctx context.Context) (int32, error) {
-	resp, err := c.GetBlockInfo(ctx, &pb.GetBlockInfoRequest{})
+	resp, err := c.GetBlockchainInfo(ctx, &pb.GetBlockchainInfoRequest{})
 	if err != nil {
 		return -1, err
 	}
-	return resp.GetInfo().GetHeight(), nil
+	return resp.GetBestHeight(), nil
 }
 
 // IsConfirmed is used to check if a transaction is confirmed
