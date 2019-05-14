@@ -86,8 +86,8 @@ func Test_GetConfirmationCount(t *testing.T) {
 
 func Test_GetCurrentBlockHeight(t *testing.T) {
 	c, fbc := newMockClient()
-	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 500},
+	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
+		BestHeight: 500,
 	}, nil)
 	height, err := c.GetCurrentBlockHeight(context.Background())
 	if err != nil {
@@ -106,8 +106,8 @@ func Test_IsConfirmed_Success(t *testing.T) {
 			LockTime:      501,
 		},
 	}, nil)
-	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 499},
+	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
+		BestHeight: 499,
 	}, nil)
 	tx, err := c.GetTx(context.Background(), "hello")
 	if err != nil {
@@ -126,8 +126,8 @@ func Test_IsConfirmed_Fail_Locktime(t *testing.T) {
 			LockTime:      501,
 		},
 	}, nil)
-	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 600},
+	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
+		BestHeight: 600,
 	}, nil)
 	tx, err := c.GetTx(context.Background(), "hello")
 	if err != nil {
@@ -186,16 +186,16 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		},
 	}, nil)
 
-	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 499},
+	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
+		BestHeight: 499,
 	}, nil)
 
-	fbc.GetBlockInfoReturnsOnCall(1, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 499},
+	fbc.GetBlockchainInfoReturnsOnCall(1, &pb.GetBlockchainInfoResponse{
+		BestHeight: 499,
 	}, nil)
 
-	fbc.GetBlockInfoReturnsOnCall(2, &pb.GetBlockInfoResponse{
-		Info: &pb.BlockInfo{Height: 499},
+	fbc.GetBlockchainInfoReturnsOnCall(2, &pb.GetBlockchainInfoResponse{
+		BestHeight: 499,
 	}, nil)
 
 	if err := c.ProcessPaymentTx(context.Background(), "hello"); err != nil {
