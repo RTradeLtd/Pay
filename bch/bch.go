@@ -15,6 +15,24 @@ var (
 	devConfirmationCount  = 1
 	prodConfirmationCount = 3
 	dev                   = false
+	// ErrTxNotConfirmedLockTime is an error used to indicate
+	// that a transaction a transaction was not confirmed
+	// because the locktime is greater than current block height
+	ErrTxNotConfirmedLockTime = "tx is not confirmed, locktime not passed"
+	// ErrTxNotConfirmed is a general error to indicate that
+	// a transaction is not yet confirmed
+	ErrTxNotConfirmed = "tx is not confirmed"
+	// ErrTxTooLowValue is an error used to indicate that the
+	// total value of a transaction does not match the expected value
+	ErrTxTooLowValue = "value of transaction does not match expected total value"
+	// ErrInvalidSenderAddress is an error used to indicate that
+	// a sender for one input does not match the expected
+	// sender for all inputs
+	ErrInvalidSenderAddress = "invalid sender address detected"
+	// ErrInvalidRecipientAddress is an error used to indicate that
+	// a recipient for one output does not match the expected
+	// recipient for all outputs
+	ErrInvalidRecipientAddress = "invalid recipient address detected"
 )
 
 // Client is used to interface with the BCH blockchain
@@ -86,9 +104,9 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 		if tx.GetTransaction().GetLockTime() > uint32(height) {
 			return nil
 		}
-		return errors.New("tx is not confirmed, locktime not passed")
+		return errors.New(ErrTxNotConfirmedLockTime)
 	}
-	return errors.New("tx is not confirmed")
+	return errors.New(ErrTxNotConfirmed)
 }
 
 // ProcessPaymentTx is used to process a payment transaction
@@ -99,7 +117,7 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, totalValue float64, sende
 	}
 	// validate the transaction output value
 	if txValue := c.getTotalValueOfTx(tx); txValue != totalValue {
-		return errors.New("value of transaction does not match expected total value")
+		return errors.New(ErrTxTooLowValue)
 	}
 	// validate the sender of the inputs
 	if err := c.validateSender(tx, senderAddress); err != nil {
@@ -139,7 +157,7 @@ func (c *Client) validateSender(tx *pb.GetTransactionResponse, senderAddress str
 	inputs := tx.GetTransaction().GetInputs()
 	for _, input := range inputs {
 		if input.GetAddress() != senderAddress {
-			return errors.New("invalid sender address detected")
+			return errors.New(ErrInvalidSenderAddress)
 		}
 	}
 	return nil
@@ -149,7 +167,7 @@ func (c *Client) validateRecipient(tx *pb.GetTransactionResponse, recipientAddre
 	outputs := tx.GetTransaction().GetOutputs()
 	for _, output := range outputs {
 		if output.GetAddress() != recipientAddress {
-			return errors.New("invalid recipient address detected")
+			return errors.New(ErrInvalidRecipientAddress)
 		}
 	}
 	return nil
