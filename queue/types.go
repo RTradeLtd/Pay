@@ -37,7 +37,6 @@ type BchPaymentConfirmation struct {
 	UserName         string `json:"user_name"`
 	SenderAddress    string `json:"sender_address"`
 	RecipientAddress string `json:"recipient_address"`
-	TransactionHash  string `json:"transaction_hash"`
 	PaymentNumber    int64  `json:"payment_number"`
 }
 
