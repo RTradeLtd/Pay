@@ -10,11 +10,29 @@ import (
 )
 
 var (
-	url = "127.0.0.1:5001"
+	url       = "127.0.0.1:5001"
+	remoteURL = "192.168.1.225:8335"
 )
 
+func Test_Integration(t *testing.T) {
+	t.Skip("integration")
+	client, err := NewClient(context.Background(), Opts{
+		CertFile: "./bch.rpc.cert",
+		URL:      remoteURL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	height, err := client.GetCurrentBlockHeight(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if height == 0 {
+		t.Fatal("height is 0")
+	}
+}
+
 func Test_NewClient(t *testing.T) {
-	if _, err := NewClient(context.Background(), url, true); err != nil {
+	if _, err := NewClient(context.Background(), Opts{URL: url, Dev: true}); err != nil {
 		t.Fatal(err)
 	}
 }

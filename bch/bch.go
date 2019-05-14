@@ -7,6 +7,7 @@ import (
 
 	pb "github.com/gcash/bchd/bchrpc/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -21,23 +22,37 @@ type Client struct {
 	confirmationCount int
 }
 
+// Opts is used to configure our BCH gRPC connection
+type Opts struct {
+	KeyFile  string
+	CertFile string
+	URL      string
+	Dev      bool
+}
+
 // NewClient is used to instantiate our new BCH gRPC client
-func NewClient(ctx context.Context, url string, devMode bool) (*Client, error) {
-	var opts []grpc.DialOption
-	if devMode {
-		opts = append(opts, grpc.WithInsecure())
+func NewClient(ctx context.Context, opts Opts) (*Client, error) {
+	var dialOpts []grpc.DialOption
+	if opts.Dev {
+		dialOpts = append(dialOpts, grpc.WithInsecure())
+	} else {
+		creds, err := credentials.NewClientTLSFromFile(opts.CertFile, "192.168.1.225")
+		if err != nil {
+			return nil, err
+		}
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
 	}
-	gConn, err := grpc.DialContext(ctx, url, opts...)
+	gConn, err := grpc.DialContext(ctx, opts.URL, dialOpts...)
 	if err != nil {
 		return nil, err
 	}
 	var confirmationCount int
-	if devMode {
+	if opts.Dev {
 		confirmationCount = devConfirmationCount
 	} else {
 		confirmationCount = prodConfirmationCount
 	}
-	dev = devMode
+	dev = opts.Dev
 	return &Client{pb.NewBchrpcClient(gConn), confirmationCount}, nil
 }
 
