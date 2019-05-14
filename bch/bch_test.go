@@ -31,8 +31,16 @@ func Test_Integration(t *testing.T) {
 	}
 }
 
-func Test_NewClient(t *testing.T) {
+func Test_NewClient_Dev(t *testing.T) {
 	if _, err := NewClient(context.Background(), Opts{URL: url, Dev: true}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func Test_NewClient_Prod(t *testing.T) {
+	if _, err := NewClient(context.Background(), Opts{
+		CertFile: "./bch.rpc.cert",
+		URL:      url}); err != nil {
 		t.Fatal(err)
 	}
 }
