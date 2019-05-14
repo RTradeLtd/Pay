@@ -51,6 +51,8 @@ github.com/ethereum/go-ethereum/common/prque
 github.com/ethereum/go-ethereum/ethdb
 github.com/ethereum/go-ethereum/metrics
 github.com/ethereum/go-ethereum/p2p/netutil
+# github.com/gcash/bchd v0.14.3
+github.com/gcash/bchd/bchrpc/pb
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
 # github.com/gogo/protobuf v1.2.1
@@ -58,8 +60,8 @@ github.com/gogo/protobuf/proto
 # github.com/golang/protobuf v1.3.1
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/jsonpb
-github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
@@ -166,15 +168,15 @@ golang.org/x/crypto/ed25519/internal/edwards25519
 # golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5
 golang.org/x/net/context
 golang.org/x/net/trace
-golang.org/x/net/websocket
 golang.org/x/net/internal/timeseries
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
+golang.org/x/net/websocket
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 # golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
-golang.org/x/sys/cpu
 golang.org/x/sys/unix
+golang.org/x/sys/cpu
 # golang.org/x/text v0.3.2
 golang.org/x/text/secure/bidirule
 golang.org/x/text/unicode/bidi
@@ -185,15 +187,13 @@ google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.20.1
 google.golang.org/grpc
 google.golang.org/grpc/credentials
-google.golang.org/grpc/codes
-google.golang.org/grpc/metadata
-google.golang.org/grpc/grpclog
-google.golang.org/grpc/peer
 google.golang.org/grpc/balancer
 google.golang.org/grpc/balancer/roundrobin
+google.golang.org/grpc/codes
 google.golang.org/grpc/connectivity
 google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
+google.golang.org/grpc/grpclog
 google.golang.org/grpc/internal
 google.golang.org/grpc/internal/backoff
 google.golang.org/grpc/internal/balancerload
@@ -204,7 +204,9 @@ google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/transport
 google.golang.org/grpc/keepalive
+google.golang.org/grpc/metadata
 google.golang.org/grpc/naming
+google.golang.org/grpc/peer
 google.golang.org/grpc/resolver
 google.golang.org/grpc/resolver/dns
 google.golang.org/grpc/resolver/passthrough

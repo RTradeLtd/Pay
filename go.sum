@@ -6,6 +6,8 @@ github.com/RTradeLtd/cmd v2.0.1+incompatible h1:pwoa4E/yoBBXcLHcnWPp+D4itGg0TgRF
 github.com/RTradeLtd/cmd v2.0.1+incompatible/go.mod h1:GZNP0nplUckIXS6ldanSSPUIhuRhkT5c7YirRR2qNwE=
 github.com/RTradeLtd/config v2.0.5+incompatible h1:qShcZtJqSBT2MIM7WcD+IRSJhGdJDDmYWgMYk0RTKcg=
 github.com/RTradeLtd/config v2.0.5+incompatible/go.mod h1:FVv/bU49cFXT3MRNrPe1VztMBxHQW6MS/DHWqtxNiRc=
+github.com/RTradeLtd/config/v2 v2.1.2 h1:akn+mYYQvy8MprcIrFD8xnsBJn3JrBM37e6uHt0Imqc=
+github.com/RTradeLtd/config/v2 v2.1.2/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/database v2.2.0+incompatible h1:/gkNEaMlbLZq6jhXBx6ImhXaIalH9OzbSrH5eMsO9rQ=
 github.com/RTradeLtd/database v2.2.0+incompatible/go.mod h1:LJxu9aB7DphTM74tWtRq0t30iPTkscnxuM683GuMEYY=
 github.com/RTradeLtd/gorm v2.0.0+incompatible h1:vShqNEwDLDXSTVqpN91KXlgrJToNklXzUoblBRkh+KA=

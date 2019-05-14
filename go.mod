@@ -6,6 +6,7 @@ require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd v2.0.1+incompatible
 	github.com/RTradeLtd/config v2.0.5+incompatible
+	github.com/RTradeLtd/config/v2 v2.1.2 // indirect
 	github.com/RTradeLtd/database v2.2.0+incompatible
 	github.com/RTradeLtd/gorm v2.0.0+incompatible
 	github.com/RTradeLtd/grpc v2.0.0+incompatible
@@ -22,7 +23,7 @@ require (
 	github.com/gcash/bchlog v0.0.0-20180913005452-b4f036f92fa6 // indirect
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/improbable-eng/grpc-web v0.9.5 // indirect
