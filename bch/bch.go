@@ -92,9 +92,21 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 }
 
 // ProcessPaymentTx is used to process a payment transaction
-func (c *Client) ProcessPaymentTx(ctx context.Context, hash string) error {
+func (c *Client) ProcessPaymentTx(ctx context.Context, totalValue float64, senderAddress, recipientAddress, hash string) error {
 	tx, err := c.GetTx(ctx, hash)
 	if err != nil {
+		return err
+	}
+	// validate the transaction output value
+	if txValue := c.getTotalValueOfTx(tx); txValue != totalValue {
+		return errors.New("value of transaction does not match expected total value")
+	}
+	// validate the sender of the inputs
+	if err := c.validateSender(tx, senderAddress); err != nil {
+		return err
+	}
+	// validate the recipient of the outputs
+	if err := c.validateRecipient(tx, recipientAddress); err != nil {
 		return err
 	}
 	if err := c.IsConfirmed(ctx, tx); err == nil {
@@ -112,6 +124,35 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, hash string) error {
 		}
 		c.pause()
 	}
+}
+
+func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse) float64 {
+	outputs := tx.GetTransaction().GetOutputs()
+	var totalValue int64
+	for _, output := range outputs {
+		totalValue = totalValue + output.GetValue()
+	}
+	return float64(totalValue)
+}
+
+func (c *Client) validateSender(tx *pb.GetTransactionResponse, senderAddress string) error {
+	inputs := tx.GetTransaction().GetInputs()
+	for _, input := range inputs {
+		if input.GetAddress() != senderAddress {
+			return errors.New("invalid sender address detected")
+		}
+	}
+	return nil
+}
+
+func (c *Client) validateRecipient(tx *pb.GetTransactionResponse, recipientAddress string) error {
+	outputs := tx.GetTransaction().GetOutputs()
+	for _, output := range outputs {
+		if output.GetAddress() != recipientAddress {
+			return errors.New("invalid recipient address detected")
+		}
+	}
+	return nil
 }
 
 func (c *Client) pause() {
