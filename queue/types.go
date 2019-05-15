@@ -14,6 +14,8 @@ var (
 	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
 	// EthPaymentConfirmationQueue is a queue used to handle ethereum based payment confirmations
 	EthPaymentConfirmationQueue Queue = "eth-payment-confirmation-queue"
+	// BitcoinCashPaymentConfirmationQueue is a queue used to handle confirming bitcoin cash payments
+	BitcoinCashPaymentConfirmationQueue Queue = "bitcoin-cash-payment-confirmation-queue"
 	// ErrReconnect is an error emitted when a protocol connection error occurs
 	// It is used to signal reconnect of queue consumers and publishers
 	ErrReconnect = "protocol connection error, reconnect"
