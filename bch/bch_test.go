@@ -169,6 +169,18 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		Transaction: &pb.Transaction{
 			Confirmations: 0,
 			LockTime:      501,
+			Inputs: []*pb.Transaction_Input{
+				{
+					Address: "hello",
+					Value:   1,
+				},
+			},
+			Outputs: []*pb.Transaction_Output{
+				{
+					Address: "world",
+					Value:   1,
+				},
+			},
 		},
 	}, nil)
 
@@ -176,6 +188,18 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		Transaction: &pb.Transaction{
 			Confirmations: 1,
 			LockTime:      501,
+			Inputs: []*pb.Transaction_Input{
+				{
+					Address: "hello",
+					Value:   1,
+				},
+			},
+			Outputs: []*pb.Transaction_Output{
+				{
+					Address: "world",
+					Value:   1,
+				},
+			},
 		},
 	}, nil)
 
@@ -183,6 +207,18 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		Transaction: &pb.Transaction{
 			Confirmations: 5,
 			LockTime:      501,
+			Inputs: []*pb.Transaction_Input{
+				{
+					Address: "hello",
+					Value:   1,
+				},
+			},
+			Outputs: []*pb.Transaction_Output{
+				{
+					Address: "world",
+					Value:   1,
+				},
+			},
 		},
 	}, nil)
 
@@ -198,7 +234,7 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		BestHeight: 499,
 	}, nil)
 
-	if err := c.ProcessPaymentTx(context.Background(), "hello"); err != nil {
+	if err := c.ProcessPaymentTx(context.Background(), 1, "hello", "world", "hash"); err != nil {
 		t.Fatal(err)
 	}
 }
