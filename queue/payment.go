@@ -87,7 +87,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		}
 		// make sure we were able to find the transaction
 		if !found {
-			logger.Errorw("failed to find payment transaction after 3 repeated attempts")
+			logger.Errorw("failed to find payment transaction after 3 repeated attempts", "tx.hash", payment.TxHash)
 			d.Ack(false)
 			return
 		}
@@ -222,7 +222,7 @@ func (qm *Manager) processBchPaymentConfirmation(ctx context.Context, d amqp.Del
 		return
 	}
 	if err := service.BCH.ProcessPaymentTx(ctx, payment.ChargeAmount, payment.TxHash, payment.DepositAddress); err != nil {
-		logger.Errorw("failed to process payment", "error", err.Error())
+		logger.Errorw("failed to process payment", "error", err.Error(), "tx.hash", payment.TxHash)
 		d.Ack(false)
 		return
 	}
