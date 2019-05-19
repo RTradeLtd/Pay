@@ -7,6 +7,7 @@ import (
 
 	"github.com/RTradeLtd/config/v2"
 	pb "github.com/gcash/bchd/bchrpc/pb"
+	chainhash "github.com/gcash/bchd/chaincfg/chainhash"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -77,7 +78,11 @@ func NewClient(ctx context.Context, cfg *config.TemporalConfig, devMode bool) (*
 
 // GetTx is used to retrieve a transaction
 func (c *Client) GetTx(ctx context.Context, hash string) (*pb.GetTransactionResponse, error) {
-	return c.GetTransaction(ctx, &pb.GetTransactionRequest{Hash: []byte(hash)})
+	hsh, err := chainhash.NewHashFromStr(hash)
+	if err != nil {
+		return nil, err
+	}
+	return c.GetTransaction(ctx, &pb.GetTransactionRequest{Hash: hsh[:]})
 }
 
 // GetConfirmationCount is used to get the number of confirmations for a particular tx
