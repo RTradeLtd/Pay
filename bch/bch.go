@@ -3,11 +3,13 @@ package bch
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/RTradeLtd/config/v2"
 	pb "github.com/gcash/bchd/bchrpc/pb"
 	chainhash "github.com/gcash/bchd/chaincfg/chainhash"
+	"github.com/gcash/bchutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -121,7 +123,9 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, totalValue float64, hash,
 		return err
 	}
 	// validate the transaction output value
-	if txValue := c.getTotalValueOfTx(tx); txValue != totalValue {
+	if txValue := c.getTotalValueOfTx(tx); txValue < totalValue {
+		fmt.Println("tx value", txValue)
+		fmt.Println("total value", totalValue)
 		return errors.New(ErrTxTooLowValue)
 	}
 	// validate the recipient of the outputs
@@ -151,7 +155,8 @@ func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse) float64 {
 	for _, output := range outputs {
 		totalValue = totalValue + output.GetValue()
 	}
-	return float64(totalValue)
+	amt := bchutil.Amount(totalValue)
+	return amt.ToBCH()
 }
 
 func (c *Client) validateRecipient(tx *pb.GetTransactionResponse, recipientAddress string) error {
