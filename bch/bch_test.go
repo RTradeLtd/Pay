@@ -173,7 +173,7 @@ func Test_ProcessPaymentTx(t *testing.T) {
 			Outputs: []*pb.Transaction_Output{
 				{
 					Address: "world",
-					Value:   1,
+					Value:   100000000,
 				},
 			},
 		},
@@ -186,7 +186,7 @@ func Test_ProcessPaymentTx(t *testing.T) {
 			Outputs: []*pb.Transaction_Output{
 				{
 					Address: "world",
-					Value:   1,
+					Value:   100000000,
 				},
 			},
 		},
@@ -199,22 +199,22 @@ func Test_ProcessPaymentTx(t *testing.T) {
 			Outputs: []*pb.Transaction_Output{
 				{
 					Address: "world",
-					Value:   1,
+					Value:   100000000,
 				},
 			},
 		},
 	}, nil)
 
 	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
-		BestHeight: 499,
+		BestHeight: 999,
 	}, nil)
 
 	fbc.GetBlockchainInfoReturnsOnCall(1, &pb.GetBlockchainInfoResponse{
-		BestHeight: 499,
+		BestHeight: 999,
 	}, nil)
 
 	fbc.GetBlockchainInfoReturnsOnCall(2, &pb.GetBlockchainInfoResponse{
-		BestHeight: 499,
+		BestHeight: 999,
 	}, nil)
 
 	if err := c.ProcessPaymentTx(context.Background(), 1, txHash, "world"); err != nil {
