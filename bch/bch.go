@@ -123,17 +123,12 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, ha
 		return err
 	}
 	// validate the transaction output value
+	// this will ensure that we only examine outputs
+	// that match the depositAddress
 	txValue := c.getTotalValueOfTx(tx, depositAddress)
-
 	if txValue < expectedValue {
 		return errors.New(ErrTxTooLowValue)
 	}
-	/*TODO: determine if we should do this separately
-	or while we account for value of tx
-	// validate the recipient of the outputs
-	if err := c.validateRecipient(tx, depositAddress); err != nil {
-		return err
-	}*/
 	if err := c.IsConfirmed(ctx, tx); err == nil {
 		return nil
 	}
@@ -157,23 +152,13 @@ func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse, depositAddress
 	for _, output := range outputs {
 		// ensure we only account for outputs
 		// whose recipient is our deposit address
-		//if output.GetAddress() != depositAddress {
-		//		continue
-		//	}
+		if output.GetAddress() != depositAddress {
+			continue
+		}
 		totalValue = totalValue + output.GetValue()
 	}
 	amt := bchutil.Amount(totalValue)
 	return amt.ToBCH()
-}
-
-func (c *Client) validateRecipient(tx *pb.GetTransactionResponse, recipientAddress string) error {
-	outputs := tx.GetTransaction().GetOutputs()
-	for _, output := range outputs {
-		if output.GetAddress() != recipientAddress {
-			return errors.New(ErrInvalidRecipientAddress)
-		}
-	}
-	return nil
 }
 
 func (c *Client) pause() {
