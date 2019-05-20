@@ -226,6 +226,7 @@ func (qm *Manager) processBchPaymentConfirmation(ctx context.Context, d amqp.Del
 		d.Ack(false)
 		return
 	}
+	logger.Infow("successfully confirmed payment", "tx.hash", payment.TxHash)
 	if _, err := service.PM.ConfirmPayment(payment.TxHash); err != nil {
 		logger.Errorw("failed to confirm payment", "error", err.Error())
 		d.Ack(false)
