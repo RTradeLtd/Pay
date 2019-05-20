@@ -14,6 +14,7 @@ var (
 	url       = "127.0.0.1:5001"
 	remoteURL = "192.168.1.225:8335"
 	cfgPath   = "../test/config.json"
+	txHash    = "011db9a9b0c3e95b4551418643ad995974c4e590e47cba107388d6939dbf97b6"
 )
 
 func Test_Integration(t *testing.T) {
