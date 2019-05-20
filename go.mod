@@ -21,7 +21,7 @@ require (
 	github.com/ethereum/go-ethereum v1.8.27
 	github.com/gcash/bchd v0.14.3
 	github.com/gcash/bchlog v0.0.0-20180913005452-b4f036f92fa6 // indirect
-	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0 // indirect
+	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
