@@ -221,7 +221,7 @@ func (qm *Manager) processBchPaymentConfirmation(ctx context.Context, d amqp.Del
 		d.Ack(false)
 		return
 	}
-	if err := service.BCH.ProcessPaymentTx(ctx, payment.ChargeAmount, payment.TxHash, payment.DepositAddress); err != nil {
+	if err := service.BCH.ProcessPaymentTx(ctx, logger, payment.ChargeAmount, payment.TxHash, payment.DepositAddress); err != nil {
 		logger.Errorw("failed to process payment", "error", err.Error(), "tx.hash", payment.TxHash)
 		d.Ack(false)
 		return
