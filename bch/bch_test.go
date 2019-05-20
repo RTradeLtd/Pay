@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/mocks"
 	"github.com/RTradeLtd/config/v2"
 	pb "github.com/gcash/bchd/bchrpc/pb"
@@ -216,8 +217,11 @@ func Test_ProcessPaymentTx(t *testing.T) {
 	fbc.GetBlockchainInfoReturnsOnCall(2, &pb.GetBlockchainInfoResponse{
 		BestHeight: 999,
 	}, nil)
-
-	if err := c.ProcessPaymentTx(context.Background(), 1, txHash, "world"); err != nil {
+	logger, err := log.NewLogger("", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.ProcessPaymentTx(context.Background(), logger, 1, txHash, "world"); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -9,6 +9,7 @@ import (
 	pb "github.com/gcash/bchd/bchrpc/pb"
 	chainhash "github.com/gcash/bchd/chaincfg/chainhash"
 	"github.com/gcash/bchutil"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -117,11 +118,13 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 }
 
 // ProcessPaymentTx is used to process a payment transaction
-func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, hash, depositAddress string) error {
+func (c *Client) ProcessPaymentTx(ctx context.Context, l *zap.SugaredLogger, expectedValue float64, hash, depositAddress string) error {
+	l.Info("getting tx from blockchain")
 	tx, err := c.GetTx(ctx, hash)
 	if err != nil {
 		return err
 	}
+	l.Info("validating value of tx")
 	// validate the transaction output value
 	// this will ensure that we only examine outputs
 	// that match the depositAddress
@@ -129,27 +132,45 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, ha
 	if txValue < expectedValue {
 		return errors.New(ErrTxTooLowValue)
 	}
+	l.Info("checking if tx is confirmed")
+	// check whether the tx is confirmed
 	if err := c.IsConfirmed(ctx, tx); err == nil {
+		l.Info("tx confirmed")
 		return nil
 	}
+	l.Info("tx not confirmed, waiting for confirmations")
+	// dissallow processing times longer than 3 hours
+	killTime := time.Now().Add(time.Hour * 3)
 	// wait for some blocks to pass
 	c.pause()
 	for {
+		if time.Now().UnixNano() > killTime.UnixNano() {
+			return errors.New("timeout occured while waiting for transaction to confirm")
+		}
+		l.Info("checking if tx is confirmed")
+		// refetch tx from blockchain
 		tx, err = c.GetTx(ctx, hash)
 		if err != nil {
 			return err
 		}
+		// check whether tx is confirmed
 		if err := c.IsConfirmed(ctx, tx); err == nil {
+			l.Info("tx confirmed")
 			return nil
 		}
+		l.Info("tx not confirmed, waiting for confirmations")
 		c.pause()
 	}
 }
 
 func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse, depositAddress string) float64 {
-	outputs := tx.GetTransaction().GetOutputs()
+	// total value measured in satoshis
 	var totalValue int64
-	for _, output := range outputs {
+	// since BCH is a UTXO based blockchain, we must validate only the outputs
+	// since we don't particularly care about the inputs. For each output
+	// we find, we must first validate the address. If the address matches
+	// our deposit address, then we add the value of that output to our total value
+	for _, output := range tx.GetTransaction().GetOutputs() {
 		// ensure we only account for outputs
 		// whose recipient is our deposit address
 		if output.GetAddress() != depositAddress {
@@ -158,6 +179,7 @@ func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse, depositAddress
 		totalValue = totalValue + output.GetValue()
 	}
 	amt := bchutil.Amount(totalValue)
+	// convert the total value from satoshi's into BCH.
 	return amt.ToBCH()
 }
 
