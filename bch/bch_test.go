@@ -108,7 +108,7 @@ func Test_IsConfirmed_Success(t *testing.T) {
 		},
 	}, nil)
 	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
-		BestHeight: 499,
+		BestHeight: 511,
 	}, nil)
 	tx, err := c.GetTx(context.Background(), txHash)
 	if err != nil {
@@ -124,7 +124,7 @@ func Test_IsConfirmed_Fail_Locktime(t *testing.T) {
 	fbc.GetTransactionReturnsOnCall(0, &pb.GetTransactionResponse{
 		Transaction: &pb.Transaction{
 			Confirmations: 6,
-			LockTime:      501,
+			LockTime:      901,
 		},
 	}, nil)
 	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
