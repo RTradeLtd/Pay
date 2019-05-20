@@ -75,7 +75,7 @@ func Test_GetConfirmationCount(t *testing.T) {
 			Confirmations: 6,
 		},
 	}, nil)
-	tx, err := c.GetTx(context.Background(), "hello")
+	tx, err := c.GetTx(context.Background(), txHash)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func Test_IsConfirmed_Success(t *testing.T) {
 	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
 		BestHeight: 499,
 	}, nil)
-	tx, err := c.GetTx(context.Background(), "hello")
+	tx, err := c.GetTx(context.Background(), txHash)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func Test_IsConfirmed_Fail_Locktime(t *testing.T) {
 	fbc.GetBlockchainInfoReturnsOnCall(0, &pb.GetBlockchainInfoResponse{
 		BestHeight: 600,
 	}, nil)
-	tx, err := c.GetTx(context.Background(), "hello")
+	tx, err := c.GetTx(context.Background(), txHash)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +151,7 @@ func Test_IsConfirmed_NoConfirmations(t *testing.T) {
 	fbc.GetBlockInfoReturnsOnCall(0, &pb.GetBlockInfoResponse{
 		Info: &pb.BlockInfo{Height: 600},
 	}, nil)
-	tx, err := c.GetTx(context.Background(), "hello")
+	tx, err := c.GetTx(context.Background(), txHash)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +216,7 @@ func Test_ProcessPaymentTx(t *testing.T) {
 		BestHeight: 499,
 	}, nil)
 
-	if err := c.ProcessPaymentTx(context.Background(), 1, "hash", "world"); err != nil {
+	if err := c.ProcessPaymentTx(context.Background(), 1, txHash, "world"); err != nil {
 		t.Fatal(err)
 	}
 }
