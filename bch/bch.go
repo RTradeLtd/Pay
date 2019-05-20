@@ -117,21 +117,27 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 }
 
 // ProcessPaymentTx is used to process a payment transaction
-func (c *Client) ProcessPaymentTx(ctx context.Context, totalValue float64, hash, depositAddress string) error {
+func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, hash, depositAddress string) error {
 	tx, err := c.GetTx(ctx, hash)
 	if err != nil {
 		return err
 	}
 	// validate the transaction output value
-	if txValue := c.getTotalValueOfTx(tx); txValue < totalValue {
+	fmt.Println("validating transaction value")
+	txValue := c.getTotalValueOfTx(tx, depositAddress)
+
+	if txValue < expectedValue {
 		fmt.Println("tx value", txValue)
-		fmt.Println("total value", totalValue)
+		fmt.Println("total value", expectedValue)
 		return errors.New(ErrTxTooLowValue)
 	}
+	/*TODO: determine if we should do this separately
+	or while we account for value of tx
 	// validate the recipient of the outputs
 	if err := c.validateRecipient(tx, depositAddress); err != nil {
 		return err
-	}
+	}*/
+	fmt.Println("waiting for payment to confirm")
 	if err := c.IsConfirmed(ctx, tx); err == nil {
 		return nil
 	}
@@ -149,10 +155,15 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, totalValue float64, hash,
 	}
 }
 
-func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse) float64 {
+func (c *Client) getTotalValueOfTx(tx *pb.GetTransactionResponse, depositAddress string) float64 {
 	outputs := tx.GetTransaction().GetOutputs()
 	var totalValue int64
 	for _, output := range outputs {
+		// ensure we only account for outputs
+		// whose recipient is our deposit address
+		//if output.GetAddress() != depositAddress {
+		//		continue
+		//	}
 		totalValue = totalValue + output.GetValue()
 	}
 	amt := bchutil.Amount(totalValue)
