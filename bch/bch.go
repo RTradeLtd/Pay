@@ -3,7 +3,6 @@ package bch
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/RTradeLtd/config/v2"
@@ -108,7 +107,8 @@ func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse)
 		if err != nil {
 			return err
 		}
-		if tx.GetTransaction().GetLockTime() > uint32(height) {
+		// ensure that the lock time is less than or equal to current height
+		if tx.GetTransaction().GetLockTime() <= uint32(height) {
 			return nil
 		}
 		return errors.New(ErrTxNotConfirmedLockTime)
@@ -123,12 +123,9 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, ha
 		return err
 	}
 	// validate the transaction output value
-	fmt.Println("validating transaction value")
 	txValue := c.getTotalValueOfTx(tx, depositAddress)
 
 	if txValue < expectedValue {
-		fmt.Println("tx value", txValue)
-		fmt.Println("total value", expectedValue)
 		return errors.New(ErrTxTooLowValue)
 	}
 	/*TODO: determine if we should do this separately
@@ -137,7 +134,6 @@ func (c *Client) ProcessPaymentTx(ctx context.Context, expectedValue float64, ha
 	if err := c.validateRecipient(tx, depositAddress); err != nil {
 		return err
 	}*/
-	fmt.Println("waiting for payment to confirm")
 	if err := c.IsConfirmed(ctx, tx); err == nil {
 		return nil
 	}
