@@ -103,7 +103,7 @@ func (c *Client) GetCurrentBlockHeight(ctx context.Context) (int32, error) {
 
 // IsConfirmed is used to check if a transaction is confirmed
 func (c *Client) IsConfirmed(ctx context.Context, tx *pb.GetTransactionResponse) error {
-	if c.GetConfirmationCount(tx) > int32(c.confirmationCount) {
+	if c.GetConfirmationCount(tx) >= int32(c.confirmationCount) {
 		height, err := c.GetCurrentBlockHeight(ctx)
 		if err != nil {
 			return err
