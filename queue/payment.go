@@ -17,7 +17,7 @@ import (
 
 // ProcessETHPayment is used to process ethereum and rtc based payments
 func (qm *Manager) ProcessETHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.NewPaymentService(qm.cfg, &service.Opts{EthereumEnabled: true, DashEnabled: false}, "rpc")
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{EthereumEnabled: true}, "rpc")
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 		}
 		// make sure we were able to find the transaction
 		if !found {
-			logger.Errorw("failed to find payment transaction after 3 repeated attempts")
+			logger.Errorw("failed to find payment transaction after 3 repeated attempts", "tx.hash", payment.TxHash)
 			d.Ack(false)
 			return
 		}
@@ -135,7 +135,7 @@ func (qm *Manager) processETHPayment(d amqp.Delivery, wg *sync.WaitGroup, servic
 
 // ProcessDASHPayment is used to process dash based payments
 func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
-	service, err := service.NewPaymentService(qm.cfg, &service.Opts{EthereumEnabled: false, DashEnabled: true}, "rpc")
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{DashEnabled: true}, "rpc")
 	if err != nil {
 		return err
 	}
@@ -167,6 +167,99 @@ func (qm *Manager) ProcessDASHPayment(ctx context.Context, wg *sync.WaitGroup, m
 			return errors.New(ErrReconnect)
 		}
 	}
+}
+
+// ProcessBCHPayment is used to handle processing of BCH based payments
+func (qm *Manager) ProcessBCHPayment(ctx context.Context, wg *sync.WaitGroup, msgs <-chan amqp.Delivery) error {
+	service, err := service.NewPaymentService(ctx, qm.cfg, &service.Opts{BitcoinCashEnabled: true, BCHURL: "temporary"}, "rpc")
+	if err != nil {
+		return err
+	}
+	logger, err := log.NewLogger(qm.cfg.LogDir+"bch_email_publisher.log", false)
+	if err != nil {
+		return err
+	}
+	qmEmail, err := New(EmailSendQueue, qm.cfg, logger, true)
+	if err != nil {
+		return err
+	}
+	qm.l.Info("processing bch payment confirmations")
+	for {
+		select {
+		case d := <-msgs:
+			wg.Add(1)
+			fmt.Println(d)
+			go qm.processBchPaymentConfirmation(ctx, d, wg, service, qmEmail)
+		case <-ctx.Done():
+			qm.Close()
+			wg.Done()
+			return nil
+		case msg := <-qm.ErrCh:
+			qm.Close()
+			wg.Done()
+			qm.l.Errorw(
+				"a protocol connection error stopping rabbitmq was received",
+				"error", msg.Error())
+			return errors.New(ErrReconnect)
+		}
+	}
+}
+
+func (qm *Manager) processBchPaymentConfirmation(ctx context.Context, d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager) {
+	defer wg.Done()
+	qm.l.Info("new bch payment message received")
+	msg := BchPaymentConfirmation{}
+	if err := json.Unmarshal(d.Body, &msg); err != nil {
+		qm.l.Error("failed to unmarshal message", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	logger := qm.l.With("user", msg.UserName).With("number", msg.PaymentNumber).With("currency", "bch")
+	payment, err := service.PM.FindPaymentByNumber(msg.UserName, msg.PaymentNumber)
+	if err != nil {
+		logger.Errorw("failed to find payment from database", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if err := service.BCH.ProcessPaymentTx(ctx, logger, payment.ChargeAmount, payment.TxHash, payment.DepositAddress); err != nil {
+		logger.Errorw("failed to process payment", "error", err.Error(), "tx.hash", payment.TxHash)
+		d.Ack(false)
+		return
+	}
+	logger.Infow("successfully confirmed payment", "tx.hash", payment.TxHash)
+	if _, err := service.PM.ConfirmPayment(payment.TxHash); err != nil {
+		logger.Errorw("failed to confirm payment", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if _, err := service.UM.AddCredits(msg.UserName, payment.USDValue); err != nil {
+		logger.Errorw("failed to add credits to user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	user, err := service.UM.FindByUserName(msg.UserName)
+	if err != nil {
+		logger.Errorw("failed to find email for user", "error", err.Error())
+		d.Ack(false)
+		return
+	}
+	if !user.EmailEnabled {
+		logger.Warnw("user has not activated their email and won't receive notifications")
+		d.Ack(false)
+		return
+	}
+	es := EmailSend{
+		Subject:     "BCH Payment Confirmed",
+		Content:     fmt.Sprintf("Your bch payment for %v credits has been confirmed", payment.USDValue),
+		ContentType: "text/html",
+		UserNames:   []string{payment.UserName},
+		Emails:      []string{user.EmailAddress},
+	}
+	if err := qmEmail.PublishMessage(es); err != nil {
+		logger.Errorw("failed to send payment confirmation email", "error", err.Error())
+	}
+	d.Ack(false)
+	return
 }
 
 func (qm *Manager) processDashPaymentConfirmation(d amqp.Delivery, wg *sync.WaitGroup, service *service.PaymentService, qmEmail *Manager, um *models.UserManager) {

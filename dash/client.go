@@ -5,7 +5,7 @@ import (
 	"time"
 
 	ch "github.com/RTradeLtd/ChainRider-Go/dash"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"go.uber.org/zap"
 )
 

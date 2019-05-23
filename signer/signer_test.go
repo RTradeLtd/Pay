@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 	"github.com/ethereum/go-ethereum/common"
 )
 

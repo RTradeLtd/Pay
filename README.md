@@ -4,17 +4,19 @@
 
 > 💸 Temporal's blockchain-based payment processing service
 
-Pay is a service used to facilitate payment for credits on [Temporal](https://github.com/RTradeLtd/Temporal) via various cryptocurrencies. It operates as a separate service which exposes a gRPC API. 
+Pay is a service used to facilitate payment for credits on [Temporal](https://github.com/RTradeLtd/Temporal) via various cryptocurrencies. It operates as a separate service which exposes a gRPC API.
 
 Current supported payment methods are:
 
 * ETH
 * RTC
 * DASH
+* BCH
 
 Planned payment methods are:
 
 * BTC
-* BCH
 * XMR
+
+
 

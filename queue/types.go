@@ -14,6 +14,8 @@ var (
 	DashPaymentConfirmationQueue Queue = "dash-payment-confirmation-queue"
 	// EthPaymentConfirmationQueue is a queue used to handle ethereum based payment confirmations
 	EthPaymentConfirmationQueue Queue = "eth-payment-confirmation-queue"
+	// BitcoinCashPaymentConfirmationQueue is a queue used to handle confirming bitcoin cash payments
+	BitcoinCashPaymentConfirmationQueue Queue = "bitcoin-cash-payment-confirmation-queue"
 	// ErrReconnect is an error emitted when a protocol connection error occurs
 	// It is used to signal reconnect of queue consumers and publishers
 	ErrReconnect = "protocol connection error, reconnect"
@@ -30,6 +32,12 @@ type DashPaymentConfirmation struct {
 	UserName         string `json:"user_name"`
 	PaymentForwardID string `json:"payment_forward_id"`
 	PaymentNumber    int64  `json:"payment_number"`
+}
+
+// BchPaymentConfirmation is used to confirm a bitcoin cash based payment
+type BchPaymentConfirmation struct {
+	UserName      string `json:"user_name"`
+	PaymentNumber int64  `json:"payment_number"`
 }
 
 // EmailSend is a helper struct used to contained formatted content ot send as an email

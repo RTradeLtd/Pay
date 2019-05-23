@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/RTradeLtd/Pay/ethereum"
-	"github.com/RTradeLtd/config"
+	"github.com/RTradeLtd/config/v2"
 )
 
 var (
