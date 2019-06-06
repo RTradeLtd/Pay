@@ -8,8 +8,8 @@ import (
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/ethereum"
 	"github.com/RTradeLtd/config/v2"
-	"github.com/RTradeLtd/database/models"
 	"github.com/RTradeLtd/database/v2"
+	"github.com/RTradeLtd/database/v2/models"
 )
 
 // PaymentService is our service which handles payment management

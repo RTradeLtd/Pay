@@ -11,7 +11,7 @@ import (
 	"github.com/RTradeLtd/Pay/dash"
 	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/service"
-	"github.com/RTradeLtd/database/models"
+	"github.com/RTradeLtd/database/v2/models"
 	"github.com/streadway/amqp"
 )
 
