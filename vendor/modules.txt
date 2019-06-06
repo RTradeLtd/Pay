@@ -1,16 +1,13 @@
 # github.com/RTradeLtd/ChainRider-Go v1.0.8
 github.com/RTradeLtd/ChainRider-Go/dash
-# github.com/RTradeLtd/cmd v2.0.1+incompatible
-github.com/RTradeLtd/cmd
-# github.com/RTradeLtd/config v2.0.5+incompatible
-github.com/RTradeLtd/config
-# github.com/RTradeLtd/database v2.2.0+incompatible
-github.com/RTradeLtd/database
-github.com/RTradeLtd/database/models
-github.com/RTradeLtd/database/utils
-# github.com/RTradeLtd/gorm v2.0.0+incompatible
-github.com/RTradeLtd/gorm
-github.com/RTradeLtd/gorm/dialects/postgres
+# github.com/RTradeLtd/cmd/v2 v2.1.0
+github.com/RTradeLtd/cmd/v2
+# github.com/RTradeLtd/config/v2 v2.1.5
+github.com/RTradeLtd/config/v2
+# github.com/RTradeLtd/database/v2 v2.3.2
+github.com/RTradeLtd/database/v2
+github.com/RTradeLtd/database/v2/models
+github.com/RTradeLtd/database/v2/utils
 # github.com/RTradeLtd/grpc v2.0.0+incompatible
 github.com/RTradeLtd/grpc/pay
 github.com/RTradeLtd/grpc/middleware
@@ -25,6 +22,8 @@ github.com/aristanetworks/goarista/monotime
 github.com/btcsuite/btcd/btcec
 # github.com/c2h5oh/datasize v0.0.0-20171227191756-4eba002a5eae
 github.com/c2h5oh/datasize
+# github.com/dchest/siphash v1.2.1
+github.com/dchest/siphash
 # github.com/deckarep/golang-set v1.7.1
 github.com/deckarep/golang-set
 # github.com/ethereum/go-ethereum v1.8.27
@@ -53,6 +52,13 @@ github.com/ethereum/go-ethereum/metrics
 github.com/ethereum/go-ethereum/p2p/netutil
 # github.com/gcash/bchd v0.14.3
 github.com/gcash/bchd/bchrpc/pb
+github.com/gcash/bchd/chaincfg/chainhash
+github.com/gcash/bchd/bchec
+github.com/gcash/bchd/chaincfg
+github.com/gcash/bchd/wire
+# github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
+github.com/gcash/bchutil
+github.com/gcash/bchutil/base58
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
 # github.com/gogo/protobuf v1.2.1
@@ -87,6 +93,9 @@ github.com/ipfs/go-log
 github.com/ipfs/go-log/tracer
 github.com/ipfs/go-log/writer
 github.com/ipfs/go-log/tracer/wire
+# github.com/jinzhu/gorm v1.9.8
+github.com/jinzhu/gorm
+github.com/jinzhu/gorm/dialects/postgres
 # github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 github.com/jinzhu/inflection
 # github.com/lib/pq v1.1.1
@@ -101,7 +110,7 @@ github.com/libp2p/go-libp2p-crypto/pb
 github.com/libp2p/go-libp2p-peer
 # github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.5
+# github.com/mattn/go-isatty v0.0.7
 github.com/mattn/go-isatty
 # github.com/miguelmota/go-solidity-sha3 v0.1.0
 github.com/miguelmota/go-solidity-sha3
@@ -109,11 +118,11 @@ github.com/miguelmota/go-solidity-sha3
 github.com/minio/blake2b-simd
 # github.com/minio/sha256-simd v0.0.0-20190131020904-2d45a736cd16
 github.com/minio/sha256-simd
-# github.com/mr-tron/base58 v1.1.0
+# github.com/mr-tron/base58 v1.1.1
 github.com/mr-tron/base58/base58
 # github.com/multiformats/go-multiaddr v0.0.2
 github.com/multiformats/go-multiaddr
-# github.com/multiformats/go-multihash v0.0.1
+# github.com/multiformats/go-multihash v0.0.3
 github.com/multiformats/go-multihash
 # github.com/onrik/ethrpc v0.0.0-20190305112807-6b8e9c0e9a8f
 github.com/onrik/ethrpc
@@ -157,6 +166,7 @@ go.uber.org/zap/buffer
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 # golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
+golang.org/x/crypto/ripemd160
 golang.org/x/crypto/sha3
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/pbkdf2
@@ -182,7 +192,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/transform
-# google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8
+# google.golang.org/genproto v0.0.0-20190404172233-64821d5d2107
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.20.1
 google.golang.org/grpc

@@ -13,7 +13,7 @@ import (
 	"github.com/RTradeLtd/Pay/log"
 	"github.com/RTradeLtd/Pay/queue"
 	"github.com/RTradeLtd/Pay/server"
-	"github.com/RTradeLtd/gorm"
+	"github.com/jinzhu/gorm"
 
 	"github.com/RTradeLtd/cmd/v2"
 	"github.com/RTradeLtd/config/v2"

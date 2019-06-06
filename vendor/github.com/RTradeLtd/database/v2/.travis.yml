@@ -1,0 +1,26 @@
+language: go
+go:
+  - "1.12"
+services:
+  - docker
+
+install:
+  - go get -u golang.org/x/lint/golint
+  - GO111MODULE=on go mod vendor
+
+before_script:
+  - go vet ./...
+  - go build ./...
+  - go test -run xxxx ./...
+  - make testenv
+
+script:
+  - go fmt ./...
+  - golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor
+  - go test -race -short -coverprofile=coverage.txt ./...
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+notifications: 
+  email: false 
