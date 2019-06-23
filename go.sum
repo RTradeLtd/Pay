@@ -14,6 +14,8 @@ github.com/RTradeLtd/config/v2 v2.1.5 h1:5RqXYZJNufmsHk9tL1I2wyQHxkgc/fdXjyamoeg
 github.com/RTradeLtd/config/v2 v2.1.5/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/database/v2 v2.3.2 h1:HMmjJB16w+JOKhS/aA0yxp0HC2d3obK2ehz8e+phrvE=
 github.com/RTradeLtd/database/v2 v2.3.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
+github.com/RTradeLtd/database/v2 v2.4.2 h1:ILokR44JKUeSgPrqcmUyfMLTKEJCD81pw596aFjXagU=
+github.com/RTradeLtd/database/v2 v2.4.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
 github.com/RTradeLtd/grpc v2.0.0+incompatible h1:4/I8CityZtNusVw0/zVS2vNwgKd/hex3UJORgYP4fpI=
 github.com/RTradeLtd/grpc v2.0.0+incompatible/go.mod h1:wtgJzW1fsgyF4iRl9Fdz5dg2Xa6uuo01msxyAPQJHks=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
