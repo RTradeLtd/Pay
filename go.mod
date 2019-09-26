@@ -20,7 +20,7 @@ require (
 	github.com/gcash/bchd v0.14.3
 	github.com/gcash/bchutil v0.0.0-20190417142952-050b747bffa0
 	github.com/golang/protobuf v1.3.1 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.1 // indirect
 	github.com/jarcoal/httpmock v1.0.4 // indirect
