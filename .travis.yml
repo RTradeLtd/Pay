@@ -1,6 +1,6 @@
 language: go
 go:
-  - "1.12"
+  - "1.13"
 services:
   - docker
 
@@ -24,3 +24,8 @@ after_success:
 
 notifications: 
   email: false 
+
+cache:
+  directories:
+    - $GOPATH/pkg/mod
+    - $HOME/.cache/go-build
