@@ -47,7 +47,7 @@ func (qm *Manager) ProcessENSRequest(
 	}
 	usg := models.NewUsageManager(qm.db)
 	userm := models.NewUserManager(qm.db)
-	qm.l.Info("processing payment confirmations")
+	qm.l.Info("processing ens requests")
 	for {
 		select {
 		case d := <-msgs:
