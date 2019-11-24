@@ -84,30 +84,43 @@ func (qm *Manager) processENSRequest(
 	var err error
 	switch req.Type {
 	case ENSRegisterSubName:
+		qm.l.Info("registering sub domain")
 		err = ec.RegisterSubDomain(req.UserName, ethereum.TemporalENSName)
 	case ENSUpdateContentHash:
+		qm.l.Info("updating content hash")
 		err = ec.UpdateContentHash(
 			req.UserName,
 			ethereum.TemporalENSName,
 			req.ContentHash,
 		)
 	case ENSRegisterName:
-		err = ec.RegisterName(req.UserName + ".eth")
+		qm.l.Info("registering name")
+		// TODO(bonedaddy): re-enable
+		// err = ec.RegisterName(req.UserName + ".eth")
+		fallthrough
 	default:
 		qm.l.Errorw("unsupported request type", "user", req.UserName, "type", req.Type)
 		d.Ack(false)
 		return
 	}
+	qm.l.Info("searching for user")
 	user, usrErr := userm.FindByUserName(req.UserName)
 	if usrErr != nil {
 		// if we cant find the user, email admin for help
 		qm.l.Errorw("failed to search for user", "user", req.UserName, "type", req.Type)
+		qm.l.Warn("sending email to admin instead")
 		user = &models.User{
 			UserName:     "admin",
 			EmailAddress: "admin@rtradetechnologies.com",
 			EmailEnabled: true,
 		}
 	}
+	if !user.EmailEnabled {
+		qm.l.Info("successfully processed ens request")
+		d.Ack(false)
+		return
+	}
+	qm.l.Info("sending ens request confirmation email")
 	var es EmailSend
 	if err != nil {
 		es = EmailSend{
@@ -135,6 +148,7 @@ func (qm *Manager) processENSRequest(
 	if err := qmEmail.PublishMessage(es); err != nil {
 		qm.l.Errorw("failed to send ens request confirmation email", "error", err)
 	}
+	qm.l.Info("successfully processed ens request")
 	d.Ack(false)
 	return
 }
