@@ -22,7 +22,8 @@ const (
 	devConfirmationCount  = int(3)
 	prodConfirmationCount = int(30)
 	dev                   = false
-	temporalMainnet       = "ipfstemporal.eth"
+	// TemporalENSName is our official ens name
+	TemporalENSName = "ipfstemporal.eth"
 )
 
 var (
@@ -81,6 +82,48 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		ConfirmationCount:      count}, nil
 }
 
+// RegisterName is used to register an ENS name
+func (c *Client) RegisterName(name string) error {
+	c.txMux.Lock()
+	contract, err := ens.NewName(c.ETH, name)
+	if err != nil {
+		c.txMux.Unlock()
+		return err
+	}
+	// start the initial registration step
+	tx, secret, err := contract.RegisterStageOne(c.Auth.From, c.Auth)
+	c.txMux.Unlock()
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	// get the specified registration step interval period
+	sleepDuration, err := contract.RegistrationInterval()
+	if err != nil {
+		return err
+	}
+	// sleep for the specified duration plus an additional minute
+	time.Sleep(sleepDuration + time.Minute)
+	// reclaim the lock until we broadcast the tx or error
+	c.txMux.Lock()
+	// start the final registration step
+	tx, err = contract.RegisterStageTwo(c.Auth.From, secret, c.Auth)
+	c.txMux.Unlock()
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
 // RegisterSubDomain is used to register a subdomain under
 // ipfstemporal.eth, allowing it to be updated with a content hash
 func (c *Client) RegisterSubDomain(name string) error {
@@ -95,7 +138,7 @@ func (c *Client) RegisterSubDomain(name string) error {
 	// this ensure we can manage the subdomain
 	tx, err := contract.SetSubdomainOwner(
 		c.Auth,
-		temporalMainnet,
+		TemporalENSName,
 		name,
 		c.Auth.From,
 	)
