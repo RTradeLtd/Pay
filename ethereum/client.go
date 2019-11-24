@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"sync"
 	"time"
@@ -90,6 +91,12 @@ func (c *Client) RegisterName(name string) error {
 		c.txMux.Unlock()
 		return err
 	}
+	// calculate rent cost for 1 year
+	cost, err := getRentCost(contract, 31536000)
+	if err != nil {
+		c.txMux.Unlock()
+		return err
+	}
 	// start the initial registration step
 	tx, secret, err := contract.RegisterStageOne(c.Auth.From, c.Auth)
 	c.txMux.Unlock()
@@ -110,6 +117,12 @@ func (c *Client) RegisterName(name string) error {
 	time.Sleep(sleepDuration + time.Minute)
 	// reclaim the lock until we broadcast the tx or error
 	c.txMux.Lock()
+	// set rent cost as tx value
+	c.Auth.Value = cost
+	// defer reset of tx value
+	defer func() {
+		c.Auth.Value = big.NewInt(0)
+	}()
 	// start the final registration step
 	tx, err = contract.RegisterStageTwo(c.Auth.From, secret, c.Auth)
 	c.txMux.Unlock()
@@ -300,4 +313,12 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 	}
 	fmt.Println("tx confirmed")
 	return nil
+}
+
+func getRentCost(en *ens.Name, rentSeconds int64) (*big.Int, error) {
+	costSec, err := en.RentCost()
+	if err != nil {
+		return nil, err
+	}
+	return new(big.Int).Mul(costSec, big.NewInt(rentSeconds)), nil
 }
