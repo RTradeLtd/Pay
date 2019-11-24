@@ -50,7 +50,7 @@
 				"path": "/data/ethereum/geth.ipc"
 			},
 			"infura": {
-				"url": "https://rinkeby.infura.io/v3/26d7124357a044a9b67416262a44175c"
+				"url": "https://rinkeby.infura.io/v3/c48498cb7bde4f69b7194e50c6a3c220"
 			}
 		},
 		"contracts": {
