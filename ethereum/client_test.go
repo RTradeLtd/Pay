@@ -23,6 +23,23 @@ func TestEth_NewClient(t *testing.T) {
 	}
 }
 
+func TestENS(t *testing.T) {
+	cfg, err := config.LoadConfig(cfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := ethereum.NewClient(cfg, "infura")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = c.UnlockAccount(key, pass); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.RegisterName("ipfstemporal.eth"); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestEth_UnlockAccount(t *testing.T) {
 	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
