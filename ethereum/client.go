@@ -89,17 +89,21 @@ func (c *Client) SetResolver(name string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("getting name resolver")
 	resAddr, err := nm.ResolverAddress()
 	if err != nil {
 		return err
 	}
 	if resAddr.String() != common.HexToAddress("0x0").String() {
+		fmt.Println("no need to set resolver")
 		return nil
 	}
+	fmt.Println("getting public resolver for network")
 	pubResolver, err := ens.PublicResolverAddress(c.ETH)
 	if err != nil {
 		return err
 	}
+	fmt.Println("setting resolver")
 	tx, err := nm.SetResolverAddress(pubResolver, c.Auth)
 	if err != nil {
 		return err
@@ -109,6 +113,7 @@ func (c *Client) SetResolver(name string) error {
 	} else if rcpt.Status != 1 {
 		return errors.New("tx with incorrect status")
 	}
+	fmt.Println("successfulyl set resolver")
 	return nil
 }
 
