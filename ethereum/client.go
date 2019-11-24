@@ -139,7 +139,7 @@ func (c *Client) RegisterName(name string) error {
 
 // RegisterSubDomain is used to register a subdomain under
 // ipfstemporal.eth, allowing it to be updated with a content hash
-func (c *Client) RegisterSubDomain(name string) error {
+func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	c.txMux.Lock()
 	// create a registry contract handler
 	contract, err := ens.NewRegistry(c.ETH)
@@ -151,8 +151,8 @@ func (c *Client) RegisterSubDomain(name string) error {
 	// this ensure we can manage the subdomain
 	tx, err := contract.SetSubdomainOwner(
 		c.Auth,
-		TemporalENSName,
-		name,
+		parentName,
+		subName,
 		c.Auth.From,
 	)
 	if err != nil {
@@ -170,9 +170,9 @@ func (c *Client) RegisterSubDomain(name string) error {
 
 // UpdateContentHash is used to update the ipfs content hash
 // of a particular *.ipfstemporal.eth subdomain
-func (c *Client) UpdateContentHash(name, hash string) error {
+func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
 	c.txMux.Lock()
-	resolver, err := ens.NewResolver(c.ETH, name+".ipfstemporal.eth")
+	resolver, err := ens.NewResolver(c.ETH, subName+parentName)
 	if err != nil {
 		c.txMux.Unlock()
 		return err
