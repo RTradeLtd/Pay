@@ -109,6 +109,7 @@ func (c *Client) SetResolver(name string) error {
 	} else if rcpt.Status != 1 {
 		return errors.New("tx with incorrect status")
 	}
+	return nil
 }
 
 // RegisterName is used to register an ENS name
