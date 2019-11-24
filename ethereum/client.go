@@ -14,12 +14,19 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/onrik/ethrpc"
+	ens "github.com/wealdtech/go-ens/v3"
 )
 
 const (
 	devConfirmationCount  = int(3)
 	prodConfirmationCount = int(30)
 	dev                   = false
+	temporalMainnet       = "ipfstemporal.eth"
+)
+
+var (
+	ensMainnetAddress = common.HexToAddress("0x314159265dD8dbb310642f98f50C066173C1259b")
+	ensRinkebyAddress = common.HexToAddress("0xe7410170f87102DF0055eB195163A03B7F2Bff4A")
 )
 
 // Client is our connection to ethereum
@@ -70,6 +77,52 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		ConfirmationCount:      count}, nil
 }
 
+// RegisterSubDomain is used to register a subdomain under
+// ipfstemporal.eth, allowing it to be updated with a content hash
+func (c *Client) RegisterSubDomain(name string) error {
+	// create a registry contract handler
+	contract, err := ens.NewRegistry(c.ETH)
+	if err != nil {
+		return err
+	}
+	// create the subdomain, setting the name, and marking us as the owner
+	// this ensure we can manage the subdomain
+	tx, err := contract.SetSubdomainOwner(
+		c.Auth,
+		temporalMainnet,
+		name,
+		c.Auth.From,
+	)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
+// UpdateContentHash is used to update the ipfs content hash
+// of a particular *.ipfstemporal.eth subdomain
+func (c *Client) UpdateContentHash(name, hash string) error {
+	resolver, err := ens.NewResolver(c.ETH, name+".ipfstemporal.eth")
+	if err != nil {
+		return err
+	}
+	tx, err := resolver.SetContenthash(c.Auth, []byte(hash))
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
 // UnlockAccount is used to unlck our main account
 func (c *Client) UnlockAccount(keys ...string) error {
 	var (
@@ -88,6 +141,8 @@ func (c *Client) UnlockAccount(keys ...string) error {
 	return nil
 }
 
+// ProcessPaymentTx is used to process an ethereum/rtc based
+// credit purchase
 func (c *Client) ProcessPaymentTx(txHash string) error {
 	fmt.Println("getting tx receipt")
 	hash := common.HexToHash(txHash)
