@@ -15,6 +15,7 @@ var (
 	cfgPath = "../test/config.json"
 	// randomized name for testing
 	testName = strconv.FormatInt(time.Now().Unix(), 10) + ".eth"
+	testHash = "QmbWK7PAbLPgm43b8RNmAtfv3tYbjjSas8EafVbcgWkwUH"
 )
 
 func TestEth_NewClient(t *testing.T) {
@@ -40,6 +41,12 @@ func TestENS(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := c.RegisterName(testName); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.RegisterSubDomain("ipfstemporal", testName); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.UpdateContentHash("ipfstemporal", testName, testHash); err != nil {
 		t.Fatal(err)
 	}
 }
