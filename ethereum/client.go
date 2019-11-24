@@ -86,20 +86,18 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 // RegisterName is used to register an ENS name
 func (c *Client) RegisterName(name string) error {
 	c.txMux.Lock()
+	defer c.txMux.Unlock()
 	contract, err := ens.NewName(c.ETH, name)
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
 	// calculate rent cost for 1 year
 	cost, err := getRentCost(contract, 31536000)
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
 	// start the initial registration step
 	tx, secret, err := contract.RegisterStageOne(c.Auth.From, c.Auth)
-	c.txMux.Unlock()
 	if err != nil {
 		return err
 	}
@@ -115,8 +113,6 @@ func (c *Client) RegisterName(name string) error {
 	}
 	// sleep for the specified duration plus an additional minute
 	time.Sleep(sleepDuration + time.Minute)
-	// reclaim the lock until we broadcast the tx or error
-	c.txMux.Lock()
 	// set rent cost as tx value
 	c.Auth.Value = cost
 	// defer reset of tx value
@@ -125,7 +121,6 @@ func (c *Client) RegisterName(name string) error {
 	}()
 	// start the final registration step
 	tx, err = contract.RegisterStageTwo(c.Auth.From, secret, c.Auth)
-	c.txMux.Unlock()
 	if err != nil {
 		return err
 	}
@@ -141,10 +136,10 @@ func (c *Client) RegisterName(name string) error {
 // ipfstemporal.eth, allowing it to be updated with a content hash
 func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	c.txMux.Lock()
+	defer c.txMux.Unlock()
 	// create a registry contract handler
 	contract, err := ens.NewRegistry(c.ETH)
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
 	// create the subdomain, setting the name, and marking us as the owner
@@ -156,10 +151,8 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 		c.Auth.From,
 	)
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
-	c.txMux.Unlock()
 	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
 		return err
 	} else if rcpt.Status != 1 {
@@ -172,17 +165,15 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 // of a particular *.ipfstemporal.eth subdomain
 func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
 	c.txMux.Lock()
+	defer c.txMux.Unlock()
 	resolver, err := ens.NewResolver(c.ETH, subName+parentName)
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
 	tx, err := resolver.SetContenthash(c.Auth, []byte(hash))
 	if err != nil {
-		c.txMux.Unlock()
 		return err
 	}
-	c.txMux.Unlock()
 	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
 		return err
 	} else if rcpt.Status != 1 {
