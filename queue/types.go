@@ -8,6 +8,8 @@ func (qt Queue) String() string {
 }
 
 var (
+	// ENSRequestQueue is a queue used to handle ens requests
+	ENSRequestQueue Queue = "ens-request-queue"
 	// EmailSendQueue is a queue used to handle sending email messages
 	EmailSendQueue Queue = "email-send-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
