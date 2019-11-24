@@ -116,7 +116,7 @@ func (qm *Manager) processENSRequest(
 	if err != nil {
 		es = EmailSend{
 			Subject:     "ENS Request Processing Failure",
-			Content:     fmt.Sprintf("Your ens request failed due to the following error: ", err),
+			Content:     fmt.Sprint("Your ens request failed due to the following error: ", err),
 			ContentType: "text/html",
 			UserNames:   []string{req.UserName},
 			Emails:      []string{user.EmailAddress},
