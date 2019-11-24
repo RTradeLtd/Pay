@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/RTradeLtd/config/v2"
@@ -37,6 +38,9 @@ type Client struct {
 	RTCAddress             string
 	PaymentContractAddress string
 	ConfirmationCount      int
+	// enables locking for write transactions
+	// to prevent issues with nonce reuse
+	txMux sync.Mutex
 }
 
 // NewClient is used to generate our Ethereum client wrapper
@@ -80,9 +84,11 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 // RegisterSubDomain is used to register a subdomain under
 // ipfstemporal.eth, allowing it to be updated with a content hash
 func (c *Client) RegisterSubDomain(name string) error {
+	c.txMux.Lock()
 	// create a registry contract handler
 	contract, err := ens.NewRegistry(c.ETH)
 	if err != nil {
+		c.txMux.Unlock()
 		return err
 	}
 	// create the subdomain, setting the name, and marking us as the owner
@@ -94,8 +100,10 @@ func (c *Client) RegisterSubDomain(name string) error {
 		c.Auth.From,
 	)
 	if err != nil {
+		c.txMux.Unlock()
 		return err
 	}
+	c.txMux.Unlock()
 	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
 		return err
 	} else if rcpt.Status != 1 {
@@ -107,14 +115,18 @@ func (c *Client) RegisterSubDomain(name string) error {
 // UpdateContentHash is used to update the ipfs content hash
 // of a particular *.ipfstemporal.eth subdomain
 func (c *Client) UpdateContentHash(name, hash string) error {
+	c.txMux.Lock()
 	resolver, err := ens.NewResolver(c.ETH, name+".ipfstemporal.eth")
 	if err != nil {
+		c.txMux.Unlock()
 		return err
 	}
 	tx, err := resolver.SetContenthash(c.Auth, []byte(hash))
 	if err != nil {
+		c.txMux.Unlock()
 		return err
 	}
+	c.txMux.Unlock()
 	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
 		return err
 	} else if rcpt.Status != 1 {
