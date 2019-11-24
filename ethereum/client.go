@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strings"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/RTradeLtd/config/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -179,6 +181,20 @@ func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
 	} else if rcpt.Status != 1 {
 		return errors.New("tx with incorrect status")
 	}
+	return nil
+}
+
+// UnlockAccountFromConfig generates a bind transactor opts from temporal config
+func (c *Client) UnlockAccountFromConfig(cfg *config.TemporalConfig) error {
+	fileBytes, err := ioutil.ReadFile(cfg.Ethereum.Account.KeyFile)
+	if err != nil {
+		return err
+	}
+	pk, err := keystore.DecryptKey(fileBytes, cfg.Ethereum.Account.KeyPass)
+	if err != nil {
+		return err
+	}
+	c.Auth = bind.NewKeyedTransactor(pk.PrivateKey)
 	return nil
 }
 

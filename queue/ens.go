@@ -9,7 +9,6 @@ import (
 
 	"github.com/RTradeLtd/Pay/ethereum"
 	"github.com/RTradeLtd/Pay/log"
-	"github.com/RTradeLtd/Pay/service"
 	"github.com/RTradeLtd/database/v2/models"
 	"github.com/streadway/amqp"
 )
@@ -32,9 +31,7 @@ func (qm *Manager) ProcessENSRequest(
 	if err != nil {
 		return err
 	}
-	service, err := service.NewPaymentService(
-		ctx, qm.cfg, &service.Opts{EthereumEnabled: true}, "rpc")
-	if err != nil {
+	if err := ethclient.UnlockAccountFromConfig(qm.cfg); err != nil {
 		return err
 	}
 	logger, err := log.NewLogger(qm.cfg.LogDir+"pay_ens_email_publisher.log", false)
@@ -52,7 +49,7 @@ func (qm *Manager) ProcessENSRequest(
 		select {
 		case d := <-msgs:
 			wg.Add(1)
-			go qm.processENSRequest(d, wg, service, usg, userm, qmEmail, ethclient)
+			go qm.processENSRequest(d, wg, usg, userm, qmEmail, ethclient)
 		case <-ctx.Done():
 			qm.Close()
 			wg.Done()
@@ -71,7 +68,6 @@ func (qm *Manager) ProcessENSRequest(
 func (qm *Manager) processENSRequest(
 	d amqp.Delivery,
 	wg *sync.WaitGroup,
-	service *service.PaymentService,
 	usage *models.UsageManager,
 	userm *models.UserManager,
 	qmEmail *Manager,
