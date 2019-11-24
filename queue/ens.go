@@ -34,6 +34,9 @@ func (qm *Manager) ProcessENSRequest(
 	if err := ethclient.UnlockAccountFromConfig(qm.cfg); err != nil {
 		return err
 	}
+	if err := ethclient.SetResolver(ethereum.TemporalENSName); err != nil {
+		return err
+	}
 	logger, err := log.NewLogger(qm.cfg.LogDir+"pay_ens_email_publisher.log", false)
 	if err != nil {
 		return err
