@@ -29,11 +29,6 @@ const (
 	TemporalENSName = "ipfstemporal.eth"
 )
 
-var (
-	ensMainnetAddress = common.HexToAddress("0x314159265dD8dbb310642f98f50C066173C1259b")
-	ensRinkebyAddress = common.HexToAddress("0xe7410170f87102DF0055eB195163A03B7F2Bff4A")
-)
-
 // Client is our connection to ethereum
 type Client struct {
 	ETH                    *ethclient.Client
@@ -83,6 +78,37 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		RTCAddress:             cfg.Ethereum.Contracts.RTCAddress,
 		PaymentContractAddress: cfg.Ethereum.Contracts.PaymentContractAddress,
 		ConfirmationCount:      count}, nil
+}
+
+// SetResolver is used to check if name
+// doesnt have a public resolver, set it
+func (c *Client) SetResolver(name string) error {
+	c.txMux.Lock()
+	defer c.txMux.Unlock()
+	nm, err := ens.NewName(c.ETH, name)
+	if err != nil {
+		return err
+	}
+	resAddr, err := nm.ResolverAddress()
+	if err != nil {
+		return err
+	}
+	if resAddr.String() != common.HexToAddress("0x0").String() {
+		return nil
+	}
+	pubResolver, err := ens.PublicResolverAddress(c.ETH)
+	if err != nil {
+		return err
+	}
+	tx, err := nm.SetResolverAddress(pubResolver, c.Auth)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
 }
 
 // RegisterName is used to register an ENS name
@@ -139,11 +165,13 @@ func (c *Client) RegisterName(name string) error {
 func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	c.txMux.Lock()
 	defer c.txMux.Unlock()
+	fmt.Println("contacting registry contract")
 	// create a registry contract handler
 	contract, err := ens.NewRegistry(c.ETH)
 	if err != nil {
 		return err
 	}
+	fmt.Println("setting subdomain owner")
 	// create the subdomain, setting the name, and marking us as the owner
 	// this ensure we can manage the subdomain
 	tx, err := contract.SetSubdomainOwner(
@@ -152,6 +180,23 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 		subName,
 		c.Auth.From,
 	)
+	if err != nil {
+		return err
+	}
+	fmt.Println("waiting for tx to mine")
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	fmt.Println("getting public resolver")
+	pubResolver, err := ens.PublicResolverAddress(c.ETH)
+	if err != nil {
+		return err
+	}
+	c.Auth.GasLimit = 250000
+	fmt.Println("setting public resolver")
+	tx, err = contract.SetResolver(c.Auth, subName+parentName, pubResolver)
 	if err != nil {
 		return err
 	}
