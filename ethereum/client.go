@@ -200,9 +200,12 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	if err != nil {
 		return err
 	}
-	c.Auth.GasLimit = 250000
 	fmt.Println("setting public resolver")
-	tx, err = contract.SetResolver(c.Auth, subName+parentName, pubResolver)
+	tx, err = contract.SetResolver(
+		c.Auth,
+		c.GetCombinedName(subName, parentName),
+		pubResolver,
+	)
 	if err != nil {
 		return err
 	}
@@ -379,4 +382,18 @@ func getRentCost(en *ens.Name, rentSeconds int64) (*big.Int, error) {
 		return nil, err
 	}
 	return new(big.Int).Mul(costSec, big.NewInt(rentSeconds)), nil
+}
+
+func (c *Client) GetCombinedName(subName, parentName string) string {
+	// ensure that if the first character is not a .
+	// we make it a .
+	if parentName[0] != '.' {
+		parentName = "." + parentName
+	}
+	// if the subName includes a period, remove it
+	if subName[len(subName)] == '.' {
+		subName = strings.TrimSuffix(subName, ".")
+	}
+	// return the combined subname and parent name
+	return subName + parentName
 }

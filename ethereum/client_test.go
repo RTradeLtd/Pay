@@ -40,16 +40,34 @@ func TestENS(t *testing.T) {
 	if err = c.UnlockAccount(key, pass); err != nil {
 		t.Fatal(err)
 	}
-	if err := c.RegisterName(testName); err != nil {
-		t.Fatal(err)
+	type args struct {
+		sub, parent string
 	}
-	if err := c.SetResolver(testName); err != nil {
+	tests := []struct {
+		name     string
+		args     args
+		wantName string
+	}{
+		{"1", args{"hello.", "world"}, "hello.world"},
+		{"2", args{"hello", ".world"}, "hello.world"},
+		{"3", args{"hello.", ".world"}, "hello.world"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if name := c.GetCombinedName(tt.args.sub, tt.args.parent); name != tt.wantName {
+				t.Fatalf(
+					"GetCombinedName() returned %s, wantName = %s",
+					name, tt.wantName,
+				)
+			}
+		})
+	}
+	if err := c.RegisterName(testName); err != nil {
 		t.Fatal(err)
 	}
 	if err := c.RegisterSubDomain("ipfstemporal", testName); err != nil {
 		t.Fatal(err)
 	}
-	t.Skip("content hash update is borked")
 	if err := c.UpdateContentHash("ipfstemporal", testName, testHash); err != nil {
 		t.Fatal(err)
 	}
