@@ -13,8 +13,8 @@ github.com/RTradeLtd/config v2.0.5+incompatible/go.mod h1:FVv/bU49cFXT3MRNrPe1Vz
 github.com/RTradeLtd/config/v2 v2.1.1/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
 github.com/RTradeLtd/config/v2 v2.1.5 h1:5RqXYZJNufmsHk9tL1I2wyQHxkgc/fdXjyamoegTI4A=
 github.com/RTradeLtd/config/v2 v2.1.5/go.mod h1:juSzxBr84ZeNera4QtOZ7khT9AAtqvyPPn/rx2dgzp4=
-github.com/RTradeLtd/database/v2 v2.3.2 h1:HMmjJB16w+JOKhS/aA0yxp0HC2d3obK2ehz8e+phrvE=
-github.com/RTradeLtd/database/v2 v2.3.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
+github.com/RTradeLtd/database/v2 v2.6.2 h1:tZEJZDLXzBr8lWnMYApY3imt1f6WrRMPVX93GHNpyks=
+github.com/RTradeLtd/database/v2 v2.6.2/go.mod h1:7t4vOzLgmvIz9qnZC0UY0cwdbpkVIhE6I9BaCKV4/us=
 github.com/RTradeLtd/grpc v2.0.0+incompatible h1:4/I8CityZtNusVw0/zVS2vNwgKd/hex3UJORgYP4fpI=
 github.com/RTradeLtd/grpc v2.0.0+incompatible/go.mod h1:wtgJzW1fsgyF4iRl9Fdz5dg2Xa6uuo01msxyAPQJHks=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=

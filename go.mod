@@ -6,7 +6,7 @@ require (
 	github.com/RTradeLtd/ChainRider-Go v1.0.8
 	github.com/RTradeLtd/cmd/v2 v2.1.0
 	github.com/RTradeLtd/config/v2 v2.1.5
-	github.com/RTradeLtd/database/v2 v2.3.2
+	github.com/RTradeLtd/database/v2 v2.6.2
 	github.com/RTradeLtd/grpc v2.0.0+incompatible
 	github.com/aristanetworks/goarista v0.0.0-20190502180301-283422fc1708 // indirect
 	github.com/btcsuite/btcd v0.0.0-20190427004231-96897255fd17 // indirect
