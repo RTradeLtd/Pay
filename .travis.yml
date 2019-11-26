@@ -1,13 +1,15 @@
 language: go
+
 go:
-  - "1.13"
+  - '1.13'
+
 services:
   - docker
 
 env: GO111MODULE=on
 
 install:
-- go mod download
+  - go mod download
 
 before_script:
   - go vet ./...
@@ -16,19 +18,29 @@ before_script:
 
 script:
   - go fmt ./...
-  - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor  - go test -race -short -coverprofile=coverage.txt ./...
+  - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/)
   - go test -short -race -coverprofile=coverage.txt ./...
-  
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
-- make release-cli
+  - make release-cli
 
-notifications: 
-  email: false 
+deploy:
+  provider: releases
+  api_key:
+    secure: jTarb0X1ckl0XBJ4IK3siONw70z5w4O+6cjhaLhqo+N2KXH8nGLpQYrJOr+Z2zxopQN1WehJZ4/v1NzjHdUgQnt/JKY/rkjFufsUBUsvuybDYUZn+v2DaXYYOh/SUCJ2tCCDD1UfAvOBpDFw9xSQqlbeARHov+G+8JQmgUD0oFaSFu14x331cDmUBGwOx36s2mMfMgSJTTC/j9eqA8iHbT2kyLCeOC2HOWEvJ3+1lipAinE8EO0hd21fXJI6eqxejG0opu4Ij+yrAatlkThG+loWv2XlKlbrNsuWwcSc8uVKgyrIn39UmQd2ErD2tU7qZHwSJQwDJoswp85sfTIBzKtRqedw0Zmwplp0PVdu+1t08Y0uoPH0zPs39R5w5TuJey1/9tinecHcaKldREggdTxOzBN9a84YOhn3EEaSh62IROL3IvWji/OEZX1B6h7zSs/Elky6/i7oWWK+kl6M09NPJmaLwM8K85UWzJy+03ZCnnZz0qpcpOacyBx2AxL7SHAEEc+OkuZ1BjZgIshEFP8P5lWbU9ugQ87zjVxSanX1+igb1lFXEOZuiFdP85P5rGa4f4v+HAIrz3oc0wYbG9jqMGmVu3dUIHzGX6QSmmH1Sw1o1SUy192jE5p4CPkoOSodcebJDAVojg6RMG0veQlNfI8m1ZFUOqeXdxNsUJE=
+  file_glob: true
+  file: release/pay*
+  on:
+    tags: true
+    repo: RTradeLtd/Pay
 
 cache:
   directories:
-    - $GOPATH/pkg/mod
-    - $HOME/.cache/go-build
+  - "$GOPATH/pkg/mod"
+  - "$HOME/.cache/go-build"
+
+notifications:
+  email: false
