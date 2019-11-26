@@ -222,7 +222,7 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
 	c.txMux.Lock()
 	defer c.txMux.Unlock()
-	resolver, err := ens.NewResolver(c.ETH, subName+parentName)
+	resolver, err := ens.NewResolver(c.ETH, c.GetCombinedName(subName, parentName))
 	if err != nil {
 		return err
 	}
