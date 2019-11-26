@@ -1,47 +1,36 @@
 language: go
-
 go:
-  - '1.13'
-
+- '1.13'
 services:
-  - docker
-
+- docker
 env: GO111MODULE=on
-
 install:
-  - go mod download
-
+- go mod download
 before_script:
-  - go vet ./...
-  - go build ./...
-  - go test -run xxxx ./...
-
+- go vet ./...
+- go build ./...
+- go test -run xxxx ./...
 script:
-  - go fmt ./...
-  - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/)
-  - go test -short -race -coverprofile=coverage.txt ./...
-
+- go fmt ./...
+- go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/)
+- go test -short -race -coverprofile=coverage.txt ./...
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
+- bash <(curl -s https://codecov.io/bash)
 before_deploy:
-  - make release-cli
-
+- make release-cli
 deploy:
   provider: releases
-  api_key:
-    secure: jTarb0X1ckl0XBJ4IK3siONw70z5w4O+6cjhaLhqo+N2KXH8nGLpQYrJOr+Z2zxopQN1WehJZ4/v1NzjHdUgQnt/JKY/rkjFufsUBUsvuybDYUZn+v2DaXYYOh/SUCJ2tCCDD1UfAvOBpDFw9xSQqlbeARHov+G+8JQmgUD0oFaSFu14x331cDmUBGwOx36s2mMfMgSJTTC/j9eqA8iHbT2kyLCeOC2HOWEvJ3+1lipAinE8EO0hd21fXJI6eqxejG0opu4Ij+yrAatlkThG+loWv2XlKlbrNsuWwcSc8uVKgyrIn39UmQd2ErD2tU7qZHwSJQwDJoswp85sfTIBzKtRqedw0Zmwplp0PVdu+1t08Y0uoPH0zPs39R5w5TuJey1/9tinecHcaKldREggdTxOzBN9a84YOhn3EEaSh62IROL3IvWji/OEZX1B6h7zSs/Elky6/i7oWWK+kl6M09NPJmaLwM8K85UWzJy+03ZCnnZz0qpcpOacyBx2AxL7SHAEEc+OkuZ1BjZgIshEFP8P5lWbU9ugQ87zjVxSanX1+igb1lFXEOZuiFdP85P5rGa4f4v+HAIrz3oc0wYbG9jqMGmVu3dUIHzGX6QSmmH1Sw1o1SUy192jE5p4CPkoOSodcebJDAVojg6RMG0veQlNfI8m1ZFUOqeXdxNsUJE=
   skip_cleanup: true
+  api_key:
+    secure: ScDGOmHWYf939IHdhq1QesNQHKbwDOyPpd1EiWtpUb1ROCkOJFppJrovoZN62kUfl+w2iabz8KpOOj5U1tW0t76ZjeLm8FtsoWAUSfMZDGvuCXXqnVSMdGY1jLXLgZcSH/HDTj2tExPq+ZQlfOZjhqprBFXm6KSjbaK63B4Yih0q97c1xPvKixLiA/NnauuJL6pTMFYelQehJVHBtfWctpvUt3jvE/Nc2TrcOsGu83XytD4VlNYEVLDKCaagGbYQSjP9vjEDcviyX/RmpTBYZHFP2b5or3LQkd5Q1kJ5kakm5SdUmFO7Ew9oWbK1YvmTuK7QTFUv8K8BzWqW9bGBHjNXiXqhCyt0+l5GgMddHm76cVHa3ePtCggt7/yffUOON7V5SDBpaTc7rm3d9VC8ioZMiVbfviEfEtA0RCY9u484lhTo6gNJSp3S51WZ5rW7dro5MsQ0DRk4vmjHUmo8+lFCZfaeuplNrb075gdcJQrZC3/bCF+fUyiFXC/WQdj9t40NjYjID+STA+t+Z2P/fmx/9THFy/OnlXVYzSiF+IdSAFDDuTBhYv5U6tKB2vlsCdrP5dymiXjcTtCJu5jdBKRa0eE4G9XLhZsjOt8u+tlveOn7QlsEEf73OeHsZqXrq0uFVPfIXFfjE/p3TbkBMrFQpUgx0whUd/OTKW/JWdI=
   file_glob: true
   file: release/pay*
   on:
     tags: true
     repo: RTradeLtd/Pay
-
 cache:
   directories:
   - "$GOPATH/pkg/mod"
   - "$HOME/.cache/go-build"
-
 notifications:
   email: false
