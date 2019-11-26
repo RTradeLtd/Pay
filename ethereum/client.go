@@ -397,6 +397,6 @@ func (c *Client) GetCombinedName(subName, parentName string) string {
 
 func (c *Client) getGasPrice() *big.Int {
 	gprice := new(big.Int)
-	gprice.SetString("15000000000", 10)
+	gprice.SetString("5000000000", 10)
 	return gprice
 }
