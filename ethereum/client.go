@@ -384,6 +384,7 @@ func getRentCost(en *ens.Name, rentSeconds int64) (*big.Int, error) {
 	return new(big.Int).Mul(costSec, big.NewInt(rentSeconds)), nil
 }
 
+// GetCombinedName is used to return a combined ens name
 func (c *Client) GetCombinedName(subName, parentName string) string {
 	// ensure that if the first character is not a .
 	// we make it a .
@@ -391,7 +392,7 @@ func (c *Client) GetCombinedName(subName, parentName string) string {
 		parentName = "." + parentName
 	}
 	// if the subName includes a period, remove it
-	if subName[len(subName)] == '.' {
+	if subName[len(subName)-1] == '.' {
 		subName = strings.TrimSuffix(subName, ".")
 	}
 	// return the combined subname and parent name
