@@ -100,6 +100,7 @@ func (c *Client) SetResolver(name string) error {
 	if err != nil {
 		return err
 	}
+	c.Auth.GasPrice = c.getGasPrice()
 	tx, err := nm.SetResolverAddress(pubResolver, c.Auth)
 	if err != nil {
 		return err
@@ -125,6 +126,7 @@ func (c *Client) RegisterName(name string) error {
 	if err != nil {
 		return err
 	}
+	c.Auth.GasPrice = c.getGasPrice()
 	// start the initial registration step
 	tx, secret, err := contract.RegisterStageOne(c.Auth.From, c.Auth)
 	if err != nil {
@@ -148,6 +150,7 @@ func (c *Client) RegisterName(name string) error {
 	defer func() {
 		c.Auth.Value = big.NewInt(0)
 	}()
+	c.Auth.GasPrice = c.getGasPrice()
 	// start the final registration step
 	tx, err = contract.RegisterStageTwo(c.Auth.From, secret, c.Auth)
 	if err != nil {
@@ -171,6 +174,7 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	if err != nil {
 		return err
 	}
+	c.Auth.GasPrice = c.getGasPrice()
 	// create the subdomain, setting the name, and marking us as the owner
 	// this ensure we can manage the subdomain
 	tx, err := contract.SetSubdomainOwner(
@@ -191,6 +195,7 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	if err != nil {
 		return err
 	}
+	c.Auth.GasPrice = c.getGasPrice()
 	tx, err = contract.SetResolver(
 		c.Auth,
 		c.GetCombinedName(subName, parentName),
@@ -216,6 +221,7 @@ func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
 	if err != nil {
 		return err
 	}
+	c.Auth.GasPrice = c.getGasPrice()
 	tx, err := resolver.SetContenthash(c.Auth, []byte(hash))
 	if err != nil {
 		return err
@@ -387,4 +393,10 @@ func (c *Client) GetCombinedName(subName, parentName string) string {
 	}
 	// return the combined subname and parent name
 	return subName + parentName
+}
+
+func (c *Client) getGasPrice() *big.Int {
+	gprice := new(big.Int)
+	gprice.SetString("15000000000", 10)
+	return gprice
 }
