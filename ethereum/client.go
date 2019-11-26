@@ -89,21 +89,17 @@ func (c *Client) SetResolver(name string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("getting name resolver")
 	resAddr, err := nm.ResolverAddress()
 	if err != nil {
 		return err
 	}
 	if resAddr.String() != common.HexToAddress("0x0").String() {
-		fmt.Println("no need to set resolver")
 		return nil
 	}
-	fmt.Println("getting public resolver for network")
 	pubResolver, err := ens.PublicResolverAddress(c.ETH)
 	if err != nil {
 		return err
 	}
-	fmt.Println("setting resolver")
 	tx, err := nm.SetResolverAddress(pubResolver, c.Auth)
 	if err != nil {
 		return err
@@ -113,7 +109,6 @@ func (c *Client) SetResolver(name string) error {
 	} else if rcpt.Status != 1 {
 		return errors.New("tx with incorrect status")
 	}
-	fmt.Println("successfulyl set resolver")
 	return nil
 }
 
@@ -171,13 +166,11 @@ func (c *Client) RegisterName(name string) error {
 func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	c.txMux.Lock()
 	defer c.txMux.Unlock()
-	fmt.Println("contacting registry contract")
 	// create a registry contract handler
 	contract, err := ens.NewRegistry(c.ETH)
 	if err != nil {
 		return err
 	}
-	fmt.Println("setting subdomain owner")
 	// create the subdomain, setting the name, and marking us as the owner
 	// this ensure we can manage the subdomain
 	tx, err := contract.SetSubdomainOwner(
@@ -189,18 +182,15 @@ func (c *Client) RegisterSubDomain(subName, parentName string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("waiting for tx to mine")
 	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
 		return err
 	} else if rcpt.Status != 1 {
 		return errors.New("tx with incorrect status")
 	}
-	fmt.Println("getting public resolver")
 	pubResolver, err := ens.PublicResolverAddress(c.ETH)
 	if err != nil {
 		return err
 	}
-	fmt.Println("setting public resolver")
 	tx, err = contract.SetResolver(
 		c.Auth,
 		c.GetCombinedName(subName, parentName),

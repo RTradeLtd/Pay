@@ -65,6 +65,9 @@ func TestENS(t *testing.T) {
 	if err := c.RegisterName(testName); err != nil {
 		t.Fatal(err)
 	}
+	if err := c.SetResolver(testName); err != nil {
+		t.Fatal(err)
+	}
 	if err := c.RegisterSubDomain("ipfstemporal", testName); err != nil {
 		t.Fatal(err)
 	}
