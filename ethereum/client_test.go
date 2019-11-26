@@ -24,7 +24,7 @@ var (
 
 func getKey() string {
 	// if pr build, use pr specific key
-	if os.Getenv("TRAVIS_PULL_REQUEST") == "true" {
+	if os.Getenv("TRAVIS_PULL_REQUEST") != "false" {
 		return _PrKey
 	}
 	// if branch build, use branch specific key
@@ -33,7 +33,7 @@ func getKey() string {
 
 func getName() string {
 	var tldPad string
-	if os.Getenv("TRAVIS_PULL_REQUEST") == "true" {
+	if os.Getenv("TRAVIS_PULL_REQUEST") != "false" {
 		tldPad = "pr"
 	} else {
 		tldPad = "br"
