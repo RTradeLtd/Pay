@@ -1,3 +1,5 @@
+TEMPORALVERSION=`git describe --tags`
+
 # Build pay binary
 pay:
 	@make cli
@@ -25,4 +27,11 @@ gen:
 	@echo "===================    regenerating code    ==================="
 	$(COUNTERFEITER) -o ./mocks/bch.mock.go \
 		github.com/gcash/bchd/bchrpc/pb.BchrpcClient
+	@echo "===================          done           ==================="
+
+# Build CLI binary release
+.PHONY: release-cli
+release-cli:
+	@echo "===================   cross-compiling CLI   ==================="
+	@bash .scripts/cli.sh
 	@echo "===================          done           ==================="
