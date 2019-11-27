@@ -35,3 +35,8 @@ release-cli:
 	@echo "===================   cross-compiling CLI   ==================="
 	@bash .scripts/cli.sh
 	@echo "===================          done           ==================="
+
+.PHONY: docker-build
+docker-build:
+	docker build --build-arg VERSION=$(TEMPORALVERSION) -t pay .
+	rm -rf vendor
