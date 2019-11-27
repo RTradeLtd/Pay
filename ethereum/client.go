@@ -4,22 +4,29 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"math/big"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/RTradeLtd/config/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/onrik/ethrpc"
+	ens "github.com/wealdtech/go-ens/v3"
 )
 
 const (
 	devConfirmationCount  = int(3)
 	prodConfirmationCount = int(30)
 	dev                   = false
+	// TemporalENSName is our official ens name
+	TemporalENSName = "ipfstemporal.eth"
 )
 
 // Client is our connection to ethereum
@@ -30,6 +37,9 @@ type Client struct {
 	RTCAddress             string
 	PaymentContractAddress string
 	ConfirmationCount      int
+	// enables locking for write transactions
+	// to prevent issues with nonce reuse
+	txMux sync.Mutex
 }
 
 // NewClient is used to generate our Ethereum client wrapper
@@ -70,6 +80,174 @@ func NewClient(cfg *config.TemporalConfig, connectionType string) (*Client, erro
 		ConfirmationCount:      count}, nil
 }
 
+// SetResolver is used to check if name
+// doesnt have a public resolver, set it
+func (c *Client) SetResolver(name string) error {
+	c.txMux.Lock()
+	defer c.txMux.Unlock()
+	nm, err := ens.NewName(c.ETH, name)
+	if err != nil {
+		return err
+	}
+	resAddr, err := nm.ResolverAddress()
+	if err != nil {
+		return err
+	}
+	if resAddr.String() != common.HexToAddress("0x0").String() {
+		return nil
+	}
+	pubResolver, err := ens.PublicResolverAddress(c.ETH)
+	if err != nil {
+		return err
+	}
+	c.Auth.GasPrice = c.getGasPrice()
+	tx, err := nm.SetResolverAddress(pubResolver, c.Auth)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
+// RegisterName is used to register an ENS name
+func (c *Client) RegisterName(name string) error {
+	c.txMux.Lock()
+	defer c.txMux.Unlock()
+	contract, err := ens.NewName(c.ETH, name)
+	if err != nil {
+		return err
+	}
+	// calculate rent cost for 1 year
+	cost, err := getRentCost(contract, 31536000)
+	if err != nil {
+		return err
+	}
+	c.Auth.GasPrice = c.getGasPrice()
+	// start the initial registration step
+	tx, secret, err := contract.RegisterStageOne(c.Auth.From, c.Auth)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	// get the specified registration step interval period
+	sleepDuration, err := contract.RegistrationInterval()
+	if err != nil {
+		return err
+	}
+	// sleep for the specified duration plus an additional minute
+	time.Sleep(sleepDuration + time.Minute)
+	// set rent cost as tx value
+	c.Auth.Value = cost
+	// defer reset of tx value
+	defer func() {
+		c.Auth.Value = big.NewInt(0)
+	}()
+	c.Auth.GasPrice = c.getGasPrice()
+	// start the final registration step
+	tx, err = contract.RegisterStageTwo(c.Auth.From, secret, c.Auth)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
+// RegisterSubDomain is used to register a subdomain under
+// ipfstemporal.eth, allowing it to be updated with a content hash
+func (c *Client) RegisterSubDomain(subName, parentName string) error {
+	c.txMux.Lock()
+	defer c.txMux.Unlock()
+	// create a registry contract handler
+	contract, err := ens.NewRegistry(c.ETH)
+	if err != nil {
+		return err
+	}
+	c.Auth.GasPrice = c.getGasPrice()
+	// create the subdomain, setting the name, and marking us as the owner
+	// this ensure we can manage the subdomain
+	tx, err := contract.SetSubdomainOwner(
+		c.Auth,
+		parentName,
+		subName,
+		c.Auth.From,
+	)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	pubResolver, err := ens.PublicResolverAddress(c.ETH)
+	if err != nil {
+		return err
+	}
+	c.Auth.GasPrice = c.getGasPrice()
+	tx, err = contract.SetResolver(
+		c.Auth,
+		c.GetCombinedName(subName, parentName),
+		pubResolver,
+	)
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
+// UpdateContentHash is used to update the ipfs content hash
+// of a particular *.ipfstemporal.eth subdomain
+func (c *Client) UpdateContentHash(subName, parentName, hash string) error {
+	c.txMux.Lock()
+	defer c.txMux.Unlock()
+	resolver, err := ens.NewResolver(c.ETH, c.GetCombinedName(subName, parentName))
+	if err != nil {
+		return err
+	}
+	c.Auth.GasPrice = c.getGasPrice()
+	tx, err := resolver.SetContenthash(c.Auth, []byte(hash))
+	if err != nil {
+		return err
+	}
+	if rcpt, err := bind.WaitMined(context.Background(), c.ETH, tx); err != nil {
+		return err
+	} else if rcpt.Status != 1 {
+		return errors.New("tx with incorrect status")
+	}
+	return nil
+}
+
+// UnlockAccountFromConfig generates a bind transactor opts from temporal config
+func (c *Client) UnlockAccountFromConfig(cfg *config.TemporalConfig) error {
+	fileBytes, err := ioutil.ReadFile(cfg.Ethereum.Account.KeyFile)
+	if err != nil {
+		return err
+	}
+	pk, err := keystore.DecryptKey(fileBytes, cfg.Ethereum.Account.KeyPass)
+	if err != nil {
+		return err
+	}
+	c.Auth = bind.NewKeyedTransactor(pk.PrivateKey)
+	return nil
+}
+
 // UnlockAccount is used to unlck our main account
 func (c *Client) UnlockAccount(keys ...string) error {
 	var (
@@ -88,6 +266,8 @@ func (c *Client) UnlockAccount(keys ...string) error {
 	return nil
 }
 
+// ProcessPaymentTx is used to process an ethereum/rtc based
+// credit purchase
 func (c *Client) ProcessPaymentTx(txHash string) error {
 	fmt.Println("getting tx receipt")
 	hash := common.HexToHash(txHash)
@@ -190,4 +370,33 @@ func (c *Client) WaitForConfirmations(tx *types.Transaction) error {
 	}
 	fmt.Println("tx confirmed")
 	return nil
+}
+
+func getRentCost(en *ens.Name, rentSeconds int64) (*big.Int, error) {
+	costSec, err := en.RentCost()
+	if err != nil {
+		return nil, err
+	}
+	return new(big.Int).Mul(costSec, big.NewInt(rentSeconds)), nil
+}
+
+// GetCombinedName is used to return a combined ens name
+func (c *Client) GetCombinedName(subName, parentName string) string {
+	// ensure that if the first character is not a .
+	// we make it a .
+	if parentName[0] != '.' {
+		parentName = "." + parentName
+	}
+	// if the subName includes a period, remove it
+	if subName[len(subName)-1] == '.' {
+		subName = strings.TrimSuffix(subName, ".")
+	}
+	// return the combined subname and parent name
+	return subName + parentName
+}
+
+func (c *Client) getGasPrice() *big.Int {
+	gprice := new(big.Int)
+	gprice.SetString("5000000000", 10)
+	return gprice
 }

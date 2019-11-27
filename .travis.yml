@@ -1,26 +1,36 @@
 language: go
 go:
-  - "1.12"
+- '1.13'
 services:
-  - docker
-
+- docker
 env: GO111MODULE=on
-
 install:
-  - make vendor
-
+- go mod download
 before_script:
-  - go vet ./...
-  - go build ./...
-  - go test -run xxxx ./...
-
+- go vet ./...
+- go build ./...
+- go test -run xxxx ./...
 script:
-  - go fmt ./...
-  - go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/) # golint doesn't ignore vendor  - go test -race -short -coverprofile=coverage.txt ./...
-  - go test -short -race -coverprofile=coverage.txt ./...
-  
+- go fmt ./...
+- go run golang.org/x/lint/golint $(go list ./... | grep -v /vendor/)
+- go test -short -race -coverprofile=coverage.txt ./...
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
-notifications: 
-  email: false 
+- bash <(curl -s https://codecov.io/bash)
+before_deploy:
+- make release-cli
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: ScDGOmHWYf939IHdhq1QesNQHKbwDOyPpd1EiWtpUb1ROCkOJFppJrovoZN62kUfl+w2iabz8KpOOj5U1tW0t76ZjeLm8FtsoWAUSfMZDGvuCXXqnVSMdGY1jLXLgZcSH/HDTj2tExPq+ZQlfOZjhqprBFXm6KSjbaK63B4Yih0q97c1xPvKixLiA/NnauuJL6pTMFYelQehJVHBtfWctpvUt3jvE/Nc2TrcOsGu83XytD4VlNYEVLDKCaagGbYQSjP9vjEDcviyX/RmpTBYZHFP2b5or3LQkd5Q1kJ5kakm5SdUmFO7Ew9oWbK1YvmTuK7QTFUv8K8BzWqW9bGBHjNXiXqhCyt0+l5GgMddHm76cVHa3ePtCggt7/yffUOON7V5SDBpaTc7rm3d9VC8ioZMiVbfviEfEtA0RCY9u484lhTo6gNJSp3S51WZ5rW7dro5MsQ0DRk4vmjHUmo8+lFCZfaeuplNrb075gdcJQrZC3/bCF+fUyiFXC/WQdj9t40NjYjID+STA+t+Z2P/fmx/9THFy/OnlXVYzSiF+IdSAFDDuTBhYv5U6tKB2vlsCdrP5dymiXjcTtCJu5jdBKRa0eE4G9XLhZsjOt8u+tlveOn7QlsEEf73OeHsZqXrq0uFVPfIXFfjE/p3TbkBMrFQpUgx0whUd/OTKW/JWdI=
+  file_glob: true
+  file: release/pay*
+  on:
+    tags: true
+    repo: RTradeLtd/Pay
+cache:
+  directories:
+  - "$GOPATH/pkg/mod"
+  - "$HOME/.cache/go-build"
+notifications:
+  email: false

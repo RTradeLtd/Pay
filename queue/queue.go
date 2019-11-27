@@ -153,6 +153,8 @@ func (qm *Manager) ConsumeMessages(ctx context.Context, wg *sync.WaitGroup, db *
 		return qm.ProcessETHPayment(ctx, wg, msgs)
 	case BitcoinCashPaymentConfirmationQueue:
 		return qm.ProcessBCHPayment(ctx, wg, msgs)
+	case ENSRequestQueue:
+		return qm.ProcessENSRequest(ctx, wg, msgs)
 	default:
 		return errors.New("invalid queue name")
 	}

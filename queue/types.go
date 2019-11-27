@@ -8,6 +8,8 @@ func (qt Queue) String() string {
 }
 
 var (
+	// ENSRequestQueue is a queue used to handle ens requests
+	ENSRequestQueue Queue = "ens-request-queue"
 	// EmailSendQueue is a queue used to handle sending email messages
 	EmailSendQueue Queue = "email-send-queue"
 	// DashPaymentConfirmationQueue is a queue used to handle confirming dash payments
@@ -47,4 +49,27 @@ type EmailSend struct {
 	ContentType string   `json:"content_type"`
 	UserNames   []string `json:"user_names"`
 	Emails      []string `json:"emails,omitempty"`
+}
+
+// ENSRequestType denotes a particular request type
+type ENSRequestType string
+
+func (ert ENSRequestType) String() string {
+	return string(ert)
+}
+
+const (
+	// ENSRegisterName is a name registration request message
+	ENSRegisterName = ENSRequestType("register-name")
+	// ENSRegisterSubName is a subdomain name registration request message
+	ENSRegisterSubName = ENSRequestType("regsiter-sub-name")
+	// ENSUpdateContentHash is used to update the content hash for a record
+	ENSUpdateContentHash = ENSRequestType("update-content-hash")
+)
+
+// ENSRequest is used to process an ens api request
+type ENSRequest struct {
+	Type        ENSRequestType `json:"type"`
+	UserName    string         `json:"user_name"`
+	ContentHash string         `json:"content_hash"`
 }
