@@ -128,8 +128,6 @@ var commands = map[string]cmd.Cmd{
 						if err != nil && err.Error() != queue.ErrReconnect {
 							fmt.Println("failed to consume messages", err)
 							os.Exit(1)
-						} else if err != nil && err.Error() == queue.ErrReconnect {
-							continue
 						}
 						// this will only be true if we had a graceful exit to the queue process, aka CTRL+C
 						if err == nil {
