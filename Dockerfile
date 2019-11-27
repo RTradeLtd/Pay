@@ -4,7 +4,7 @@
 
 # declare build image and arguments
 FROM golang:alpine3.10 as build-env
-ARG XVERSION
+ARG VERSION
 ENV BUILD_HOME=/BUILD \
     VERSION=${VERSION}
 # setup build directory
